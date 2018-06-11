@@ -27,17 +27,27 @@ int juliaPixel(float x, float y, int i, float cx, float cy);
 int render_rough(double cx, double cy, uint8_t c1, uint8_t c2, int Iter);
 int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter);
 int start_screen();
+int menu_keys();
 void draw_menu();
 void draw_preview(uint8_t c1, uint8_t c2, int Iter);
+void wait(uint16_t ms);
 /* Put all your globals here */
 
 //C value
 double cx = 0.4;
 double cy = -0.1;
 
+//Colors
+#define NUM_COLORS 10
+uint8_t colors[NUM_COLORS] = {gfx_red, gfx_orange, gfx_yellow, gfx_green, gfx_blue, gfx_purple, gfx_pink, gfx_white, gfx_black, 0x2f};
+
+//Index in colors
+int c1index = 0;
+int c2index = 1;
+
 //Forground and background colors
-uint16_t c1 = gfx_RGBTo1555(255,125,0);
-uint16_t c2 = gfx_RGBTo1555(0,0,255);
+uint8_t c1;
+uint8_t c2;
 
 //How far to render
 #define xLim 160
@@ -50,6 +60,9 @@ int Iter = 12;
 
 void main(void) {
     /* Fill in the body of the main function here */
+    //Init colors
+    c1 = colors[c1index];
+    c2 = colors[c2index];
     //Draw the startup screen
     gfx_Begin(gfx_8bpp);
     if(start_screen()){return;};
@@ -70,7 +83,30 @@ int start_screen(){
   //Draw Preview in top left
   draw_preview(c1, c2, PREVIEW_ITER);
   //Handle keys - waits for key right now
-  while (!os_GetCSC());
+  if(menu_keys()){return 1;};
+  return 0;
+}
+
+int menu_keys(){
+  while(true){
+    kb_Scan();
+    //Check for enter to start rendering
+    if(kb_Data[6] & kb_Enter){wait(400);return 0;}
+    //Change colors
+    if(kb_Data[4] & kb_LParen){
+      c1index++;
+      c1index %= NUM_COLORS;
+      c1 = colors[c1index];
+      draw_preview(c1, c2, PREVIEW_ITER);
+      continue;
+    };
+    if(kb_Data[5] & kb_RParen){
+      c2index++;
+      c2index %= NUM_COLORS;
+      c2 = colors[c2index];
+      draw_preview(c1, c2, PREVIEW_ITER);
+    };
+  }
   return 0;
 }
 
@@ -83,6 +119,12 @@ void draw_menu(){
   gfx_SetTextScale(1,1);
   gfx_SetTextFGColor(gfx_black);
   gfx_PrintStringXY("Preview", 5, 5);
+  gfx_PrintStringXY("Color 1", 5, 65);
+  gfx_PrintStringXY("Color 2", 5, 90);
+  //Color preview mockup boxes
+  gfx_SetColor(gfx_black);
+  gfx_FillRectangle(5, 75, 54, 10);
+  gfx_FillRectangle(5, 100, 54, 10);
   //Title
   gfx_SetTextFGColor(gfx_orange);
   gfx_SetTextScale(5, 5);
@@ -109,19 +151,25 @@ void draw_menu(){
   gfx_PrintStringXY("ent fractals. Use the + and - keys to", 67, 145);
   gfx_PrintStringXY("change the number of iterations and ", 67, 155);
   gfx_PrintStringXY("detail level. Use the ( and ) keys to", 67, 165);
-  gfx_PrintStringXY("cycle through the foreground and b-", 67, 175);
-  gfx_PrintStringXY("ackground colors, respectively. Pre-", 67, 185);
-  gfx_PrintStringXY("ss enter to negin rendering, and pr-", 67, 195);
+  gfx_PrintStringXY("cycle through the background and f-", 67, 175);
+  gfx_PrintStringXY("oreground colors, respectively. Pre-", 67, 185);
+  gfx_PrintStringXY("ss enter to begin rendering, and pr-", 67, 195);
   gfx_PrintStringXY("ess any key during rendering to exit.", 67, 205);
 
 }
 
 void draw_preview(uint8_t c1, uint8_t c2, int Iter){
-  //6 x 6 blocks - resolution 54 x 40 pixels
   uint16_t x;
   uint8_t y;
   double zx;
   double zy;
+  //Draw Color previews boxes
+  gfx_SetColor(c1);
+  gfx_FillRectangle(5, 75, 54, 10);
+  gfx_SetColor(c2);
+  gfx_FillRectangle(5, 100, 54, 10);
+
+  //6 x 6 blocks - resolution 54 x 40 pixels
   for(x = 0; x < 27; x++){
     for(y = 0; y < 40; y++){
       zx = (((double)x)*0.074)-2.0;
@@ -214,4 +262,13 @@ int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
     }
   }
   return 0;
+}
+
+void wait(uint16_t ms){
+  uint16_t i;
+  uint16_t cycles;
+  cycles = ms/10;
+  for(i = 0; i < cycles; i++){
+    boot_WaitShort();
+  }
 }
