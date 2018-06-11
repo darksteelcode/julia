@@ -4,7 +4,7 @@ Copyright (C) 1999-2008 Zilog, Inc. All Rights Reserved
 
 LINK MAP:
 
-DATE:      Mon Jun 11 11:31:53 2018
+DATE:      Mon Jun 11 12:45:52 2018
 PROCESSOR: assembler
 FILES:     obj/cstartup.obj
            obj/libheader.obj
@@ -28,8 +28,8 @@ SPACE ALLOCATION:
 
 Space                     Base         Top      Size      Used    Unused
 ------------------ ----------- ----------- --------- --------- ---------
-RAM                   D:D1A87F    D:D1B11F   300000H      8A1H   2FF75FH
-                                          (  3145728      2209   3143519)
+RAM                   D:D1A87F    D:D1B458   300000H      BDAH   2FF426H
+                                          (  3145728      3034   3142694)
 
 
 SEGMENTS WITHIN SPACE:
@@ -37,25 +37,27 @@ SEGMENTS WITHIN SPACE:
 
 RAM                Type                Base        Top         Size
 ------------------ ------------------- ----------- ----------- ---------
-.graphx            normal data            D:D1A9E8    D:D1A9FB       14h
+.graphx            normal data            D:D1A9E8    D:D1AA13       2ch
 .graphx_header     normal data            D:D1A9DF    D:D1A9E7        9h
 .header            normal data            D:D1A87F    D:D1A885        7h
 .icon              normal data            D:D1A886    D:D1A98E      109h
-.keypadc           normal data            D:D1AA06    D:D1AA09        4h
-.keypadc_header    normal data            D:D1A9FC    D:D1AA05        ah
+.keypadc_header    normal data            D:D1AA14    D:D1AA1D        ah
 .launcher          normal data            D:D1A98F    D:D1A9DE       50h
-.startup           normal data            D:D1AA0A    D:D1AA5A       51h
-CODE               normal data            D:D1AA5B    D:D1B0FD      6a3h
-DATA               normal data            D:D1B0FE    D:D1B11F       22h
+.startup           normal data            D:D1AA1E    D:D1AA6E       51h
+CODE               normal data            D:D1AA6F    D:D1B23B      7cdh
+DATA               normal data            D:D1B23C    D:D1B26C       31h
+TEXT               normal data            D:D1B26D    D:D1B458      1ech
 
 SEGMENTS WITHIN MODULES:
 ========================
 
-Module: ..\SRC\MAIN.C (File: obj/main.obj) Version: 1:0 06/11/2018 11:31:53
+Module: ..\SRC\MAIN.C (File: obj/main.obj) Version: 1:0 06/11/2018 12:45:52
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: CODE                              D:D1AA5B    D:D1B0E4      68ah
+    Segment: CODE                              D:D1AA6F    D:D1B22D      7bfh
+    Segment: DATA                              D:D1B25E    D:D1B26C        fh
+    Segment: TEXT (was STRSECT)                D:D1B26D    D:D1B458      1ech
 
 
 Module: iconc.asm (File: obj/iconc.obj) Version: 1:0 08/19/2017 12:10:03
@@ -70,85 +72,113 @@ Module: Z:\Users\edward\CEdev\lib\asm\cstartup.asm (File: obj/cstartup.obj) Vers
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .header                           D:D1A87F    D:D1A885        7h
-    Segment: .startup                          D:D1AA0A    D:D1AA5A       51h
+    Segment: .startup                          D:D1AA1E    D:D1AA6E       51h
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\graphx_header.asm (File: obj/graphx_header.obj) Version: 1:0 06/11/2018 11:31:53
+Module: Z:\Users\edward\CEdev\lib\asm\graphx_header.asm (File: obj/graphx_header.obj) Version: 1:0 06/11/2018 12:45:51
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .graphx_header                    D:D1A9DF    D:D1A9E7        9h
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\keypadc_header.asm (File: obj/keypadc_header.obj) Version: 1:0 06/11/2018 11:31:53
+Module: Z:\Users\edward\CEdev\lib\asm\keypadc_header.asm (File: obj/keypadc_header.obj) Version: 1:0 06/11/2018 12:45:51
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: .keypadc_header                   D:D1A9FC    D:D1AA05        ah
+    Segment: .keypadc_header                   D:D1AA14    D:D1AA1D        ah
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\libheader.asm (File: obj/libheader.obj) Version: 1:0 06/11/2018 11:31:53
+Module: Z:\Users\edward\CEdev\lib\asm\libheader.asm (File: obj/libheader.obj) Version: 1:0 06/11/2018 12:45:51
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .launcher                         D:D1A98F    D:D1A9DE       50h
-    Segment: DATA                              D:D1B0FE    D:D1B11F       22h
+    Segment: DATA                              D:D1B23C    D:D1B25D       22h
 
 
 Module: Z:\Users\edward\toolchain\src\graphx\gfx_Begin.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:22:56
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: .graphx                           D:D1A9F0    D:D1A9F3        4h
+    Segment: .graphx                           D:D1AA00    D:D1AA03        4h
 
 
 Module: Z:\Users\edward\toolchain\src\graphx\gfx_End.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:22:57
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: .graphx                           D:D1A9F8    D:D1A9FB        4h
+    Segment: .graphx                           D:D1AA0C    D:D1AA0F        4h
 
 
 Module: Z:\Users\edward\toolchain\src\graphx\gfx_FillRectangle.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:22:58
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
+    Segment: .graphx                           D:D1A9F8    D:D1A9FB        4h
+
+
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_FillScreen.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:22:58
+
+    Name                                        Base        Top      Size
+    --------------------------------------- ----------- ----------- ---------
+    Segment: .graphx                           D:D1A9FC    D:D1A9FF        4h
+
+
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_HorizLine.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:00
+
+    Name                                        Base        Top      Size
+    --------------------------------------- ----------- ----------- ---------
     Segment: .graphx                           D:D1A9EC    D:D1A9EF        4h
 
 
-Module: Z:\Users\edward\toolchain\src\graphx\gfx_SetColor.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:02
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_PrintStringXY.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:01
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .graphx                           D:D1A9F4    D:D1A9F7        4h
 
 
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_SetColor.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:02
+
+    Name                                        Base        Top      Size
+    --------------------------------------- ----------- ----------- ---------
+    Segment: .graphx                           D:D1AA04    D:D1AA07        4h
+
+
 Module: Z:\Users\edward\toolchain\src\graphx\gfx_SetPixel.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:03
+
+    Name                                        Base        Top      Size
+    --------------------------------------- ----------- ----------- ---------
+    Segment: .graphx                           D:D1A9F0    D:D1A9F3        4h
+
+
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_SetTextFGColor.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:03
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .graphx                           D:D1A9E8    D:D1A9EB        4h
 
 
-Module: Z:\Users\edward\toolchain\src\keypadc\kb_Scan.src (Library: /Users/edward/CEdev/lib/keypadc.lib) Version: 1:0 05/30/2017 17:23:10
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_SetTextScale.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:04
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: .keypadc                          D:D1AA06    D:D1AA09        4h
+    Segment: .graphx                           D:D1AA08    D:D1AA0B        4h
+
+
+Module: Z:\Users\edward\toolchain\src\graphx\gfx_VertLine.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:23:06
+
+    Name                                        Base        Top      Size
+    --------------------------------------- ----------- ----------- ---------
+    Segment: .graphx                           D:D1AA10    D:D1AA13        4h
 
 
 Module: Z:\Users\edward\toolchain\src\std\shared\frameset.src (Library: /Users/edward/CEdev/lib/cshared.lib) Version: 1:0 05/30/2017 17:23:26
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: CODE                              D:D1B0F0    D:D1B0FD        eh
-
-
-Module: Z:\Users\edward\toolchain\src\std\shared\frameset0.src (Library: /Users/edward/CEdev/lib/cshared.lib) Version: 1:0 05/30/2017 17:23:27
-
-    Name                                        Base        Top      Size
-    --------------------------------------- ----------- ----------- ---------
-    Segment: CODE                              D:D1B0E5    D:D1B0EF        bh
+    Segment: CODE                              D:D1B22E    D:D1B23B        eh
 
 EXTERNAL DEFINITIONS:
 =====================
@@ -165,6 +195,7 @@ _boot_GetBootMajorVer               D:000080 tice            CODE
 _boot_GetHardwareVer                D:000084 tice            CODE                            
 _boot_GetBootMinorVer               D:00008C tice            CODE                            
 _boot_DebugPrintf                   D:0000B4 tice            CODE                            
+__stoiu                             D:000264 stoiu           CODE                            
 __fadd                              D:000270 fpadd           CODE                            
 __fcmp                              D:000274 fpcmp           CODE                            
 __ultof                             D:000280 fpultof         CODE                            
@@ -283,24 +314,34 @@ __icon_begin                        D:D1A889 iconc           .icon
 __program_description               D:D1A989 iconc           .icon                           
 __icon_end                          D:D1A989 iconc           .icon                           
 __program_description_end           D:D1A98F iconc           .icon                           
-_gfx_SetPixel                       D:D1A9E8 gfx_SetPixel    .graphx                         
-_gfx_FillRectangle                  D:D1A9EC gfx_FillRectang .graphx                         
-_gfx_Begin                          D:D1A9F0 gfx_Begin       .graphx                         
-_gfx_SetColor                       D:D1A9F4 gfx_SetColor    .graphx                         
-_gfx_End                            D:D1A9F8 gfx_End         .graphx                         
-_kb_Scan                            D:D1AA06 kb_Scan         .keypadc                        
-__exit                              D:D1AA33 cstartup        .startup                        
-_exit                               D:D1AA57 cstartup        .startup                        
-_main                               D:D1AA5B MAIN            CODE                            
-_promptStr                          D:D1AADB MAIN            CODE                            
-_printText                          D:D1AD73 MAIN            CODE                            
-_juliaPixel                         D:D1AD95 MAIN            CODE                            
-_render_rough                       D:D1AE82 MAIN            CODE                            
-_render_full                        D:D1AFC4 MAIN            CODE                            
-__frameset0                         D:D1B0E5 frameset0       CODE                            
-__frameset                          D:D1B0F0 frameset        CODE                            
+_gfx_SetTextFGColor                 D:D1A9E8 gfx_SetTextFGCo .graphx                         
+_gfx_HorizLine                      D:D1A9EC gfx_HorizLine   .graphx                         
+_gfx_SetPixel                       D:D1A9F0 gfx_SetPixel    .graphx                         
+_gfx_PrintStringXY                  D:D1A9F4 gfx_PrintString .graphx                         
+_gfx_FillRectangle                  D:D1A9F8 gfx_FillRectang .graphx                         
+_gfx_FillScreen                     D:D1A9FC gfx_FillScreen  .graphx                         
+_gfx_Begin                          D:D1AA00 gfx_Begin       .graphx                         
+_gfx_SetColor                       D:D1AA04 gfx_SetColor    .graphx                         
+_gfx_SetTextScale                   D:D1AA08 gfx_SetTextScal .graphx                         
+_gfx_End                            D:D1AA0C gfx_End         .graphx                         
+_gfx_VertLine                       D:D1AA10 gfx_VertLine    .graphx                         
+__exit                              D:D1AA47 cstartup        .startup                        
+_exit                               D:D1AA6B cstartup        .startup                        
+_main                               D:D1AA6F MAIN            CODE                            
+_start_screen                       D:D1AB13 MAIN            CODE                            
+_draw_menu                          D:D1AB3C MAIN            CODE                            
+_draw_preview                       D:D1AD4D MAIN            CODE                            
+_juliaPixel                         D:D1AEB4 MAIN            CODE                            
+_render_rough                       D:D1AFA1 MAIN            CODE                            
+_render_full                        D:D1B0F8 MAIN            CODE                            
+__frameset                          D:D1B22E frameset        CODE                            
+_cx                                 D:D1B25E MAIN            DATA                            
+_cy                                 D:D1B262 MAIN            DATA                            
+_c1                                 D:D1B266 MAIN            DATA                            
+_c2                                 D:D1B268 MAIN            DATA                            
+_Iter                               D:D1B26A MAIN            DATA                            
 
-144 external symbol(s).
+155 external symbol(s).
 
 SYMBOL CROSS REFERENCE:
 =======================
@@ -317,6 +358,8 @@ _boot_GetBootMajorVer             Defined     Z:\Users\edward\toolchain\src\ce\t
 _boot_GetHardwareVer              Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _boot_GetBootMinorVer             Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _boot_DebugPrintf                 Defined     Z:\Users\edward\toolchain\src\ce\tice.src
+__stoiu                           Defined     Z:\Users\edward\toolchain\src\std\shared\stoiu.src
+                                  Referenced  ..\SRC\MAIN.C
 __fadd                            Defined     Z:\Users\edward\toolchain\src\std\shared\fpadd.src
                                   Referenced  ..\SRC\MAIN.C
 __fcmp                            Defined     Z:\Users\edward\toolchain\src\std\shared\fpcmp.src
@@ -400,10 +443,8 @@ _os_SetFlagByte                   Defined     Z:\Users\edward\toolchain\src\ce\t
 _os_GetFlagByte                   Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _os_GetCursorPos                  Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _os_PutStrFull                    Defined     Z:\Users\edward\toolchain\src\ce\tice.src
-                                  Referenced  ..\SRC\MAIN.C
 _os_PutStrLine                    Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _os_SetCursorPos                  Defined     Z:\Users\edward\toolchain\src\ce\tice.src
-                                  Referenced  ..\SRC\MAIN.C
 _os_GetKey                        Defined     Z:\Users\edward\toolchain\src\ce\tice.src
 _os_GetCSC                        Defined     Z:\Users\edward\toolchain\src\ce\tice.src
                                   Referenced  ..\SRC\MAIN.C
@@ -444,35 +485,49 @@ __program_description             Defined     iconc.asm
 __icon_end                        Defined     iconc.asm
 __program_description_end         Defined     iconc.asm
                                   Referenced  Z:\Users\edward\CEdev\lib\asm\cstartup.asm
+_gfx_SetTextFGColor               Defined     Z:\Users\edward\toolchain\src\graphx\gfx_SetTextFGColor.src
+                                  Referenced  ..\SRC\MAIN.C
+_gfx_HorizLine                    Defined     Z:\Users\edward\toolchain\src\graphx\gfx_HorizLine.src
+                                  Referenced  ..\SRC\MAIN.C
 _gfx_SetPixel                     Defined     Z:\Users\edward\toolchain\src\graphx\gfx_SetPixel.src
                                   Referenced  ..\SRC\MAIN.C
+_gfx_PrintStringXY                Defined     Z:\Users\edward\toolchain\src\graphx\gfx_PrintStringXY.src
+                                  Referenced  ..\SRC\MAIN.C
 _gfx_FillRectangle                Defined     Z:\Users\edward\toolchain\src\graphx\gfx_FillRectangle.src
+                                  Referenced  ..\SRC\MAIN.C
+_gfx_FillScreen                   Defined     Z:\Users\edward\toolchain\src\graphx\gfx_FillScreen.src
                                   Referenced  ..\SRC\MAIN.C
 _gfx_Begin                        Defined     Z:\Users\edward\toolchain\src\graphx\gfx_Begin.src
                                   Referenced  ..\SRC\MAIN.C
 _gfx_SetColor                     Defined     Z:\Users\edward\toolchain\src\graphx\gfx_SetColor.src
                                   Referenced  ..\SRC\MAIN.C
+_gfx_SetTextScale                 Defined     Z:\Users\edward\toolchain\src\graphx\gfx_SetTextScale.src
+                                  Referenced  ..\SRC\MAIN.C
 _gfx_End                          Defined     Z:\Users\edward\toolchain\src\graphx\gfx_End.src
                                   Referenced  ..\SRC\MAIN.C
-_kb_Scan                          Defined     Z:\Users\edward\toolchain\src\keypadc\kb_Scan.src
+_gfx_VertLine                     Defined     Z:\Users\edward\toolchain\src\graphx\gfx_VertLine.src
                                   Referenced  ..\SRC\MAIN.C
 __exit                            Defined     Z:\Users\edward\CEdev\lib\asm\cstartup.asm
 _exit                             Defined     Z:\Users\edward\CEdev\lib\asm\cstartup.asm
 _main                             Defined     ..\SRC\MAIN.C
                                   Referenced  Z:\Users\edward\CEdev\lib\asm\cstartup.asm
-_promptStr                        Defined     ..\SRC\MAIN.C
-_printText                        Defined     ..\SRC\MAIN.C
+_start_screen                     Defined     ..\SRC\MAIN.C
+_draw_menu                        Defined     ..\SRC\MAIN.C
+_draw_preview                     Defined     ..\SRC\MAIN.C
 _juliaPixel                       Defined     ..\SRC\MAIN.C
 _render_rough                     Defined     ..\SRC\MAIN.C
 _render_full                      Defined     ..\SRC\MAIN.C
-__frameset0                       Defined     Z:\Users\edward\toolchain\src\std\shared\frameset0.src
-                                  Referenced  ..\SRC\MAIN.C
 __frameset                        Defined     Z:\Users\edward\toolchain\src\std\shared\frameset.src
                                   Referenced  ..\SRC\MAIN.C
+_cx                               Defined     ..\SRC\MAIN.C
+_cy                               Defined     ..\SRC\MAIN.C
+_c1                               Defined     ..\SRC\MAIN.C
+_c2                               Defined     ..\SRC\MAIN.C
+_Iter                             Defined     ..\SRC\MAIN.C
 
 OUTPUT CHECKSUM
 ===============
-bin/JULIA.hex        0468AF
+bin/JULIA.hex        05E260
 
 
 
