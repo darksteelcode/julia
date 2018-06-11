@@ -31,11 +31,18 @@ int menu_keys();
 void draw_menu();
 void draw_preview(uint8_t c1, uint8_t c2, int Iter);
 void wait(uint16_t ms);
+void draw_color_preview();
+void draw_crosshair();
+void draw_iter();
+char* reverse(char *s);
+char* itoa(int num, char* str, int base);
 /* Put all your globals here */
 
+#define INCREMENT 0.1
+
 //C value
-double cx = 0.4;
-double cy = -0.1;
+double cx = 0.0;
+double cy = 0.0;
 
 //Colors
 #define NUM_COLORS 10
@@ -57,6 +64,8 @@ uint8_t c2;
 #define PREVIEW_ITER 5
 //Full Rendering Iterations - setable by user
 int Iter = 12;
+
+char iter_buf[20];
 
 void main(void) {
     /* Fill in the body of the main function here */
@@ -90,6 +99,10 @@ int start_screen(){
 int menu_keys(){
   while(true){
     kb_Scan();
+    //Check for 2nd to redraw preview
+    if(kb_Data[1] & kb_2nd){
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
     //Check for enter to start rendering
     if(kb_Data[6] & kb_Enter){wait(400);return 0;}
     //Change colors
@@ -97,15 +110,47 @@ int menu_keys(){
       c1index++;
       c1index %= NUM_COLORS;
       c1 = colors[c1index];
-      draw_preview(c1, c2, PREVIEW_ITER);
-      continue;
+      wait(300);
+      draw_color_preview();
     };
     if(kb_Data[5] & kb_RParen){
       c2index++;
       c2index %= NUM_COLORS;
       c2 = colors[c2index];
-      draw_preview(c1, c2, PREVIEW_ITER);
+      draw_color_preview();
+      wait(300);
     };
+    //Detect Arrows and adjust cx and cy
+    if(kb_Data[7] & kb_Down){
+      cy += INCREMENT;
+      draw_crosshair();
+      wait(200);
+    }
+    if(kb_Data[7] & kb_Up){
+      cy -= INCREMENT;
+      draw_crosshair();
+      wait(200);
+    }
+    if(kb_Data[7] & kb_Left){
+      cx -= INCREMENT;
+      draw_crosshair();
+      wait(200);
+    }
+    if(kb_Data[7] & kb_Right){
+      cx += INCREMENT;
+      draw_crosshair();
+      wait(200);
+    }
+    if(kb_Data[6] & kb_Add){
+      Iter += 1;
+      draw_iter();
+      wait(300);
+    }
+    if(kb_Data[6] & kb_Sub){
+      Iter -= 1;
+      draw_iter();
+      wait(300);
+    }
   }
   return 0;
 }
@@ -142,7 +187,6 @@ void draw_menu(){
   gfx_SetTextScale(2,2);
   gfx_PrintStringXY("Controls", 120,85);
   //Control Text
-  gfx_SetColor(gfx_black);
   gfx_SetTextScale(1,1);
   gfx_PrintStringXY("A Julia set starts with a complex nu-", 67, 105);
   gfx_PrintStringXY("mber C, which is represented by the  ", 67, 115);
@@ -155,7 +199,38 @@ void draw_menu(){
   gfx_PrintStringXY("oreground colors, respectively. Pre-", 67, 185);
   gfx_PrintStringXY("ss enter to begin rendering, and pr-", 67, 195);
   gfx_PrintStringXY("ess any key during rendering to exit.", 67, 205);
+  gfx_PrintStringXY("Press 2nd to update the preview.", 67, 215);
 
+}
+
+void draw_iter(){
+  //Clear Area
+  gfx_SetColor(gfx_white);
+  gfx_FillRectangle(5, 110, 54, 40);
+  gfx_SetTextFGColor(gfx_black);
+  gfx_SetTextScale(1,1);
+  gfx_PrintStringXY("Iters:", 5, 115);
+  itoa(Iter, iter_buf,10);
+  gfx_PrintStringXY(iter_buf, 5, 125);
+}
+
+void draw_color_preview(){
+  //Draw Color previews boxes
+  gfx_SetColor(c1);
+  gfx_FillRectangle(5, 75, 54, 10);
+  gfx_SetColor(c2);
+  gfx_FillRectangle(5, 100, 54, 10);
+}
+
+void draw_crosshair(){
+  uint16_t x;
+  uint16_t y;
+  x = (uint16_t)(cx*13.5) + 32;
+  y = (uint16_t)(cy*6.66) + 35;
+  //Draw
+  gfx_SetColor(gfx_black);
+  gfx_HorizLine(x-3, y, 7);
+  gfx_VertLine(x,y-3,7);
 }
 
 void draw_preview(uint8_t c1, uint8_t c2, int Iter){
@@ -163,12 +238,8 @@ void draw_preview(uint8_t c1, uint8_t c2, int Iter){
   uint8_t y;
   double zx;
   double zy;
-  //Draw Color previews boxes
-  gfx_SetColor(c1);
-  gfx_FillRectangle(5, 75, 54, 10);
-  gfx_SetColor(c2);
-  gfx_FillRectangle(5, 100, 54, 10);
-
+  draw_color_preview();
+  draw_iter();
   //6 x 6 blocks - resolution 54 x 40 pixels
   for(x = 0; x < 27; x++){
     for(y = 0; y < 40; y++){
@@ -186,12 +257,7 @@ void draw_preview(uint8_t c1, uint8_t c2, int Iter){
   }
   //Draw Small crosshair indicating where the c value is
   //Convert from floating c to real location
-  x = 15;
-  y = 25;
-  //Draw
-  gfx_SetColor(gfx_black);
-  gfx_HorizLine(x-3, y, 7);
-  gfx_VertLine(x,y-3,7);
+  draw_crosshair();
 }
 
 int juliaPixel(double x, double y, int i, double cx, double cy){
@@ -271,4 +337,62 @@ void wait(uint16_t ms){
   for(i = 0; i < cycles; i++){
     boot_WaitShort();
   }
+}
+
+char * reverse(char* s)
+{
+  int i, j;
+  char c;
+  i = 0;
+  j = strlen(s) - 1;
+  while (i < j){
+    c = s[i];
+    s[i] = s[j];
+    s[j] = c;
+    i++;
+    j--;
+  }
+        return s;
+}
+
+// Implementation of itoa()
+char* itoa(int num, char* str, int base)
+{
+    int i = 0;
+    bool isNegative = false;
+
+    /* Handle 0 explicitely, otherwise empty string is printed for 0 */
+    if (num == 0)
+    {
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
+    }
+
+    // In standard itoa(), negative numbers are handled only with
+    // base 10. Otherwise numbers are considered unsigned.
+    if (num < 0 && base == 10)
+    {
+        isNegative = true;
+        num = -num;
+    }
+
+    // Process individual digits
+    while (num != 0)
+    {
+        int rem = num % base;
+        str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        num = num/base;
+    }
+
+    // If number is negative, append '-'
+    if (isNegative)
+        str[i++] = '-';
+
+    str[i] = '\0'; // Append string terminator
+
+    // Reverse the string
+    reverse(str);
+
+    return str;
 }

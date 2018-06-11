@@ -5,9 +5,9 @@
 	.assume ADL=1
 	SEGMENT DATA
 _cx:
-	DF	0.4
+	DF	0.0
 _cy:
-	DF	-0.1
+	DF	0.0
 _colors:
 	DB	224
 	DB	227
@@ -34,6 +34,9 @@ _c2:
 _Iter:
 	DW	12
 	DB	0
+	SEGMENT BSS
+_iter_buf:
+	DS	20
 ;    1	/*
 ;    2	 *--------------------------------------
 ;    3	 * Program Name:
@@ -67,47 +70,56 @@ _Iter:
 ;   31	void draw_menu();
 ;   32	void draw_preview(uint8_t c1, uint8_t c2, int Iter);
 ;   33	void wait(uint16_t ms);
-;   34	/* Put all your globals here */
-;   35	
-;   36	//C value
-;   37	double cx = 0.4;
-;   38	double cy = -0.1;
-;   39	
-;   40	//Colors
-;   41	#define NUM_COLORS 10
-;   42	uint8_t colors[NUM_COLORS] = {gfx_red, gfx_orange, gfx_yellow, gfx_green, gfx_blue, gfx_purple, gfx_pink, gfx_white, gfx_black, 0x2f};
-;   43	
-;   44	//Index in colors
-;   45	int c1index = 0;
-;   46	int c2index = 1;
-;   47	
-;   48	//Forground and background colors
-;   49	uint8_t c1;
-;   50	uint8_t c2;
-;   51	
-;   52	//How far to render
-;   53	#define xLim 160
-;   54	#define yLim 240
-;   55	
-;   56	#define ROUGH_ITER 7
-;   57	#define PREVIEW_ITER 5
-;   58	//Full Rendering Iterations - setable by user
-;   59	int Iter = 12;
+;   34	void draw_color_preview();
+;   35	void draw_crosshair();
+;   36	void draw_iter();
+;   37	char* reverse(char *s);
+;   38	char* itoa(int num, char* str, int base);
+;   39	/* Put all your globals here */
+;   40	
+;   41	#define INCREMENT 0.1
+;   42	
+;   43	//C value
+;   44	double cx = 0.0;
+;   45	double cy = 0.0;
+;   46	
+;   47	//Colors
+;   48	#define NUM_COLORS 10
+;   49	uint8_t colors[NUM_COLORS] = {gfx_red, gfx_orange, gfx_yellow, gfx_green, gfx_blue, gfx_purple, gfx_pink, gfx_white, gfx_black, 0x2f};
+;   50	
+;   51	//Index in colors
+;   52	int c1index = 0;
+;   53	int c2index = 1;
+;   54	
+;   55	//Forground and background colors
+;   56	uint8_t c1;
+;   57	uint8_t c2;
+;   58	
+;   59	//How far to render
+;   60	#define xLim 160
+;   61	#define yLim 240
+;   62	
+;   63	#define ROUGH_ITER 7
+;   64	#define PREVIEW_ITER 5
+;   65	//Full Rendering Iterations - setable by user
+;   66	int Iter = 12;
+;   67	
+;   68	char iter_buf[20];
 	SEGMENT CODE
-;   60	
-;   61	void main(void) {
+;   69	
+;   70	void main(void) {
 _main:
-;   62	    /* Fill in the body of the main function here */
-;   63	    //Init colors
-;   64	    c1 = colors[c1index];
+;   71	    /* Fill in the body of the main function here */
+;   72	    //Init colors
+;   73	    c1 = colors[c1index];
 	LD	BC,_colors
 	LD	HL,(_c1index)
 	ADD	HL,BC
 	LD	A,(HL)
 	LD	(_c1),A
-;   65	    c2 = colors[c2index];
-;   66	    //Draw the startup screen
-;   67	    gfx_Begin(gfx_8bpp);
+;   74	    c2 = colors[c2index];
+;   75	    //Draw the startup screen
+;   76	    gfx_Begin(gfx_8bpp);
 	LD	BC,39
 	PUSH	BC
 	LD	HL,(_c2index)
@@ -117,14 +129,14 @@ _main:
 	LD	(_c2),A
 	CALL	_gfx_Begin
 	POP	BC
-;   68	    if(start_screen()){return;};
+;   77	    if(start_screen()){return;};
 	CALL	_start_screen
 	LD	BC,0
 	OR	A,A
 	SBC	HL,BC
 	JR	NZ,L_9
-;   69	    //Do a rough outline
-;   70	    if(render_rough(cx, cy, c1, c2, ROUGH_ITER)){return;};
+;   78	    //Do a rough outline
+;   79	    if(render_rough(cx, cy, c1, c2, ROUGH_ITER)){return;};
 	LD	A,(_c2)
 	LD	C,A
 	LD	A,(_c1)
@@ -156,8 +168,8 @@ _main:
 	OR	A,A
 	SBC	HL,BC
 	JR	NZ,L_9
-;   71	    //Full render
-;   72	    if(render_full(cx, cy, c2, c1, Iter)){return;};
+;   80	    //Full render
+;   81	    if(render_full(cx, cy, c2, c1, Iter)){return;};
 	LD	A,(_c1)
 	LD	C,A
 	LD	A,(_c2)
@@ -189,15 +201,15 @@ _main:
 	OR	A,A
 	SBC	HL,BC
 	JR	NZ,L_9
-;   73	    //Wait for keypress to exit
-;   74	    while (!os_GetCSC());
+;   82	    //Wait for keypress to exit
+;   83	    while (!os_GetCSC());
 L_7:
 	CALL	_os_GetCSC
 	OR	A,A
 	JR	Z,L_7
-;   75	    gfx_End();
+;   84	    gfx_End();
 	CALL	_gfx_End
-;   76	}
+;   85	}
 L_9:
 	RET	
 
@@ -224,16 +236,16 @@ L_9:
 ;       Spill Code: 0 (instruction)
 
 
-;   77	
-;   78	/* Put other functions here */
-;   79	
-;   80	int start_screen(){
+;   86	
+;   87	/* Put other functions here */
+;   88	
+;   89	int start_screen(){
 _start_screen:
-;   81	  //Draw Menu
-;   82	  draw_menu();
+;   90	  //Draw Menu
+;   91	  draw_menu();
 	CALL	_draw_menu
-;   83	  //Draw Preview in top left
-;   84	  draw_preview(c1, c2, PREVIEW_ITER);
+;   92	  //Draw Preview in top left
+;   93	  draw_preview(c1, c2, PREVIEW_ITER);
 	LD	A,(_c2)
 	LD	C,A
 	LD	A,(_c1)
@@ -247,8 +259,8 @@ _start_screen:
 	POP	BC
 	POP	BC
 	POP	BC
-;   85	  //Handle keys - waits for key right now
-;   86	  if(menu_keys()){return 1;};
+;   94	  //Handle keys - waits for key right now
+;   95	  if(menu_keys()){return 1;};
 	CALL	_menu_keys
 	LD	BC,0
 	OR	A,A
@@ -258,9 +270,9 @@ _start_screen:
 	JR	L_12
 L_11:
 	OR	A,A
-;   87	  return 0;
+;   96	  return 0;
 	SBC	HL,HL
-;   88	}
+;   97	}
 L_12:
 	RET	
 
@@ -278,46 +290,19 @@ L_12:
 ;       Spill Code: 0 (instruction)
 
 
-;   89	
-;   90	int menu_keys(){
+;   98	
+;   99	int menu_keys(){
 _menu_keys:
-;   91	  while(true){
-L_22:
-;   92	    kb_Scan();
+;  100	  while(true){
+L_35:
+;  101	    kb_Scan();
 	CALL	_kb_Scan
-;   93	    //Check for enter to start rendering
-;   94	    if(kb_Data[6] & kb_Enter){wait(400);return 0;}
-	LD	A,(16056348)
-	AND	A,1
-	JR	Z,L_16
-	LD	BC,400
-	PUSH	BC
-	CALL	_wait
-	POP	BC
-	OR	A,A
-	SBC	HL,HL
-	JR	L_24
-L_16:
-;   95	    //Change colors
-;   96	    if(kb_Data[4] & kb_LParen){
-	LD	A,(16056344)
-	AND	A,16
-	JR	Z,L_17
-;   97	      c1index++;
-	LD	BC,(_c1index)
-	INC	BC
-	LD	(_c1index),BC
-;   98	      c1index %= NUM_COLORS;
-	LD	HL,(_c1index)
-	LD	BC,10
-	CALL	__irems
-	LD	(_c1index),HL
-;   99	      c1 = colors[c1index];
-	LD	BC,_colors
-	ADD	HL,BC
-	LD	A,(HL)
-	LD	(_c1),A
-;  100	      draw_preview(c1, c2, PREVIEW_ITER);
+;  102	    //Check for 2nd to redraw preview
+;  103	    if(kb_Data[1] & kb_2nd){
+	LD	A,(16056338)
+	AND	A,32
+	JR	Z,L_15
+;  104	      draw_preview(c1, c2, PREVIEW_ITER);
 	LD	A,(_c2)
 	LD	C,A
 	LD	A,(_c1)
@@ -331,59 +316,217 @@ L_16:
 	POP	BC
 	POP	BC
 	POP	BC
-;  101	      continue;
-	JR	L_22
-;  102	    };
-L_17:
-;  103	    if(kb_Data[5] & kb_RParen){
+;  105	    }
+L_15:
+;  106	    //Check for enter to start rendering
+;  107	    if(kb_Data[6] & kb_Enter){wait(400);return 0;}
+	LD	A,(16056348)
+	AND	A,1
+	JR	Z,L_18
+	LD	BC,400
+	PUSH	BC
+	CALL	_wait
+	POP	BC
+	OR	A,A
+	SBC	HL,HL
+	JR	L_37
+L_18:
+;  108	    //Change colors
+;  109	    if(kb_Data[4] & kb_LParen){
+	LD	A,(16056344)
+	AND	A,16
+	JR	Z,L_19
+;  110	      c1index++;
+	LD	BC,(_c1index)
+	INC	BC
+	LD	(_c1index),BC
+;  111	      c1index %= NUM_COLORS;
+	LD	HL,(_c1index)
+	LD	BC,10
+	CALL	__irems
+	LD	(_c1index),HL
+;  112	      c1 = colors[c1index];
+	LD	BC,_colors
+;  113	      wait(300);
+	LD	DE,300
+	PUSH	DE
+	ADD	HL,BC
+	LD	A,(HL)
+	LD	(_c1),A
+	CALL	_wait
+	POP	BC
+;  114	      draw_color_preview();
+	CALL	_draw_color_preview
+;  115	    };
+L_19:
+;  116	    if(kb_Data[5] & kb_RParen){
 	LD	A,(16056346)
 	AND	A,16
 	JR	Z,L_22
-;  104	      c2index++;
+;  117	      c2index++;
 	LD	BC,(_c2index)
 	INC	BC
 	LD	(_c2index),BC
-;  105	      c2index %= NUM_COLORS;
+;  118	      c2index %= NUM_COLORS;
 	LD	HL,(_c2index)
 	LD	BC,10
 	CALL	__irems
 	LD	(_c2index),HL
-;  106	      c2 = colors[c2index];
+;  119	      c2 = colors[c2index];
 	LD	BC,_colors
 	ADD	HL,BC
 	LD	A,(HL)
 	LD	(_c2),A
-;  107	      draw_preview(c1, c2, PREVIEW_ITER);
-	LD	C,A
-	LD	A,(_c1)
-	LD	DE,5
-	PUSH	DE
-	LD	B,0
+;  120	      draw_color_preview();
+	CALL	_draw_color_preview
+;  121	      wait(300);
+	LD	BC,300
 	PUSH	BC
-	LD	C,A
+	CALL	_wait
+	POP	BC
+;  122	    };
+L_22:
+;  123	    //Detect Arrows and adjust cx and cy
+;  124	    if(kb_Data[7] & kb_Down){
+	LD	A,(16056350)
+	AND	A,1
+	JR	Z,L_25
+;  125	      cy += INCREMENT;
+	LD	HL,13421773
+	LD	E,61
+	LD	BC,(_cy)
+	LD	A,(_cy+3)
+	CALL	__fadd
+	LD	(_cy),BC
+	LD	(_cy+3),A
+;  126	      draw_crosshair();
+	CALL	_draw_crosshair
+;  127	      wait(200);
+	LD	BC,200
 	PUSH	BC
-	CALL	_draw_preview
+	CALL	_wait
 	POP	BC
+;  128	    }
+L_25:
+;  129	    if(kb_Data[7] & kb_Up){
+	LD	A,(16056350)
+	AND	A,8
+	JR	Z,L_27
+;  130	      cy -= INCREMENT;
+	LD	HL,13421773
+	LD	E,61
+	LD	BC,(_cy)
+	LD	A,(_cy+3)
+	CALL	__fsub
+	LD	(_cy),BC
+	LD	(_cy+3),A
+;  131	      draw_crosshair();
+	CALL	_draw_crosshair
+;  132	      wait(200);
+	LD	BC,200
+	PUSH	BC
+	CALL	_wait
 	POP	BC
+;  133	    }
+L_27:
+;  134	    if(kb_Data[7] & kb_Left){
+	LD	A,(16056350)
+	AND	A,2
+	JR	Z,L_29
+;  135	      cx -= INCREMENT;
+	LD	HL,13421773
+	LD	E,61
+	LD	BC,(_cx)
+	LD	A,(_cx+3)
+	CALL	__fsub
+	LD	(_cx),BC
+	LD	(_cx+3),A
+;  136	      draw_crosshair();
+	CALL	_draw_crosshair
+;  137	      wait(200);
+	LD	BC,200
+	PUSH	BC
+	CALL	_wait
 	POP	BC
-	JR	L_22
-;  108	    };
-;  109	  }
-;  110	  return 0;
-;  111	}
-L_24:
+;  138	    }
+L_29:
+;  139	    if(kb_Data[7] & kb_Right){
+	LD	A,(16056350)
+	AND	A,4
+	JR	Z,L_31
+;  140	      cx += INCREMENT;
+	LD	HL,13421773
+	LD	E,61
+	LD	BC,(_cx)
+	LD	A,(_cx+3)
+	CALL	__fadd
+	LD	(_cx),BC
+	LD	(_cx+3),A
+;  141	      draw_crosshair();
+	CALL	_draw_crosshair
+;  142	      wait(200);
+	LD	BC,200
+	PUSH	BC
+	CALL	_wait
+	POP	BC
+;  143	    }
+L_31:
+;  144	    if(kb_Data[6] & kb_Add){
+	LD	A,(16056348)
+	AND	A,2
+	JR	Z,L_33
+;  145	      Iter += 1;
+	LD	BC,(_Iter)
+	INC	BC
+	LD	(_Iter),BC
+;  146	      draw_iter();
+	CALL	_draw_iter
+;  147	      wait(300);
+	LD	BC,300
+	PUSH	BC
+	CALL	_wait
+	POP	BC
+;  148	    }
+L_33:
+;  149	    if(kb_Data[6] & kb_Sub){
+	LD	A,(16056348)
+	AND	A,4
+	JR	Z,L_35
+;  150	      Iter -= 1;
+	LD	BC,(_Iter)
+	DEC	BC
+	LD	(_Iter),BC
+;  151	      draw_iter();
+	CALL	_draw_iter
+;  152	      wait(300);
+	LD	BC,300
+	PUSH	BC
+	CALL	_wait
+	POP	BC
+	JR	L_35
+;  153	    }
+;  154	  }
+;  155	  return 0;
+;  156	}
+L_37:
 	RET	
 
 
 ;**************************** _menu_keys ***************************
 ;Name                         Addr/Register   Size   Type
+;_draw_iter                          IMPORT  -----   function
+;_Iter                               STATIC      3   variable
+;_cx                                 STATIC      4   variable
+;_draw_crosshair                     IMPORT  -----   function
+;_cy                                 STATIC      4   variable
 ;_c2index                            STATIC      3   variable
-;_c2                                 STATIC      1   variable
-;_draw_preview                       IMPORT  -----   function
-;_c1                                 STATIC      1   variable
+;_draw_color_preview                 IMPORT  -----   function
 ;_colors                             STATIC     10   variable
 ;_c1index                            STATIC      3   variable
 ;_wait                               IMPORT  -----   function
+;_c1                                 STATIC      1   variable
+;_c2                                 STATIC      1   variable
+;_draw_preview                       IMPORT  -----   function
 ;_kb_Scan                            IMPORT  -----   function
 
 
@@ -391,21 +534,21 @@ L_24:
 ;       Spill Code: 0 (instruction)
 
 
-;  112	
-;  113	void draw_menu(){
+;  157	
+;  158	void draw_menu(){
 _draw_menu:
-;  114	  gfx_FillScreen(gfx_white);
+;  159	  gfx_FillScreen(gfx_white);
 	LD	BC,255
 	PUSH	BC
 	CALL	_gfx_FillScreen
 	POP	BC
-;  115	  //Mockup preview square
-;  116	  gfx_SetColor(gfx_black);
+;  160	  //Mockup preview square
+;  161	  gfx_SetColor(gfx_black);
 	LD	BC,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  117	  gfx_FillRectangle(5, 15, 54, 40);
+;  162	  gfx_FillRectangle(5, 15, 54, 40);
 	LD	BC,40
 	PUSH	BC
 	LD	BC,54
@@ -419,198 +562,22 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  118	  //Preview label
-;  119	  gfx_SetTextScale(1,1);
+;  163	  //Preview label
+;  164	  gfx_SetTextScale(1,1);
 	LD	BC,1
 	PUSH	BC
 	PUSH	BC
 	CALL	_gfx_SetTextScale
 	POP	BC
 	POP	BC
-;  120	  gfx_SetTextFGColor(gfx_black);
+;  165	  gfx_SetTextFGColor(gfx_black);
 	LD	BC,0
 	PUSH	BC
 	CALL	_gfx_SetTextFGColor
 	POP	BC
-;  121	  gfx_PrintStringXY("Preview", 5, 5);
+;  166	  gfx_PrintStringXY("Preview", 5, 5);
 	LD	BC,5
 	PUSH	BC
-	PUSH	BC
-	LD	BC,L__11
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  122	  gfx_PrintStringXY("Color 1", 5, 65);
-	LD	BC,65
-	PUSH	BC
-	LD	BC,5
-	PUSH	BC
-	LD	BC,L__12
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  123	  gfx_PrintStringXY("Color 2", 5, 90);
-	LD	BC,90
-	PUSH	BC
-	LD	BC,5
-	PUSH	BC
-	LD	BC,L__13
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  124	  //Color preview mockup boxes
-;  125	  gfx_SetColor(gfx_black);
-	LD	BC,0
-	PUSH	BC
-	CALL	_gfx_SetColor
-	POP	BC
-;  126	  gfx_FillRectangle(5, 75, 54, 10);
-	LD	BC,10
-	PUSH	BC
-	LD	BC,54
-	PUSH	BC
-	LD	BC,75
-	PUSH	BC
-	LD	BC,5
-	PUSH	BC
-	CALL	_gfx_FillRectangle
-	POP	BC
-	POP	BC
-	POP	BC
-	POP	BC
-;  127	  gfx_FillRectangle(5, 100, 54, 10);
-	LD	BC,10
-	PUSH	BC
-	LD	BC,54
-	PUSH	BC
-	LD	BC,100
-	PUSH	BC
-	LD	BC,5
-	PUSH	BC
-	CALL	_gfx_FillRectangle
-	POP	BC
-	POP	BC
-	POP	BC
-	POP	BC
-;  128	  //Title
-;  129	  gfx_SetTextFGColor(gfx_orange);
-	LD	BC,227
-	PUSH	BC
-	CALL	_gfx_SetTextFGColor
-	POP	BC
-;  130	  gfx_SetTextScale(5, 5);
-	LD	BC,5
-	PUSH	BC
-	PUSH	BC
-	CALL	_gfx_SetTextScale
-	POP	BC
-	POP	BC
-;  131	  gfx_PrintStringXY("Julia", 100, 20);
-	LD	BC,20
-	PUSH	BC
-	LD	BC,100
-	PUSH	BC
-	LD	BC,L__14
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  132	  //Description
-;  133	  gfx_SetTextFGColor(gfx_green);
-	LD	BC,3
-	PUSH	BC
-	CALL	_gfx_SetTextFGColor
-	POP	BC
-;  134	  gfx_SetTextScale(1, 1);
-	LD	BC,1
-	PUSH	BC
-	PUSH	BC
-	CALL	_gfx_SetTextScale
-	POP	BC
-	POP	BC
-;  135	  gfx_PrintStringXY("A Julia Set Viewer For the TI-84+CE", 75, 60);
-	LD	BC,60
-	PUSH	BC
-	LD	BC,75
-	PUSH	BC
-	LD	BC,L__15
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  136	  //Author
-;  137	  gfx_SetTextFGColor(gfx_orange);
-	LD	BC,227
-	PUSH	BC
-	CALL	_gfx_SetTextFGColor
-	POP	BC
-;  138	  gfx_SetTextScale(1, 1);
-	LD	BC,1
-	PUSH	BC
-	PUSH	BC
-	CALL	_gfx_SetTextScale
-	POP	BC
-	POP	BC
-;  139	  gfx_PrintStringXY("By Edward Wawrzynek", 170, 70);
-	LD	BC,70
-	PUSH	BC
-	LD	BC,170
-	PUSH	BC
-	LD	BC,L__16
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  140	  //Controls Header
-;  141	  gfx_SetTextFGColor(gfx_black);
-	LD	BC,0
-	PUSH	BC
-	CALL	_gfx_SetTextFGColor
-	POP	BC
-;  142	  gfx_SetTextScale(2,2);
-	LD	BC,2
-	PUSH	BC
-	PUSH	BC
-	CALL	_gfx_SetTextScale
-	POP	BC
-	POP	BC
-;  143	  gfx_PrintStringXY("Controls", 120,85);
-	LD	BC,85
-	PUSH	BC
-	LD	BC,120
-	PUSH	BC
-	LD	BC,L__17
-	PUSH	BC
-	CALL	_gfx_PrintStringXY
-	POP	BC
-	POP	BC
-	POP	BC
-;  144	  //Control Text
-;  145	  gfx_SetColor(gfx_black);
-	LD	BC,0
-	PUSH	BC
-	CALL	_gfx_SetColor
-	POP	BC
-;  146	  gfx_SetTextScale(1,1);
-	LD	BC,1
-	PUSH	BC
-	PUSH	BC
-	CALL	_gfx_SetTextScale
-	POP	BC
-	POP	BC
-;  147	  gfx_PrintStringXY("A Julia set starts with a complex nu-", 67, 105);
-	LD	BC,105
-	PUSH	BC
-	LD	BC,67
 	PUSH	BC
 	LD	BC,L__18
 	PUSH	BC
@@ -618,10 +585,10 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  148	  gfx_PrintStringXY("mber C, which is represented by the  ", 67, 115);
-	LD	BC,115
+;  167	  gfx_PrintStringXY("Color 1", 5, 65);
+	LD	BC,65
 	PUSH	BC
-	LD	BC,67
+	LD	BC,5
 	PUSH	BC
 	LD	BC,L__19
 	PUSH	BC
@@ -629,10 +596,10 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  149	  gfx_PrintStringXY("crosshair in the preview. Use the ar-", 67, 125);
-	LD	BC,125
+;  168	  gfx_PrintStringXY("Color 2", 5, 90);
+	LD	BC,90
 	PUSH	BC
-	LD	BC,67
+	LD	BC,5
 	PUSH	BC
 	LD	BC,L__20
 	PUSH	BC
@@ -640,10 +607,57 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  150	  gfx_PrintStringXY("row keys to change it and get differ-", 67, 135);
-	LD	BC,135
+;  169	  //Color preview mockup boxes
+;  170	  gfx_SetColor(gfx_black);
+	LD	BC,0
 	PUSH	BC
-	LD	BC,67
+	CALL	_gfx_SetColor
+	POP	BC
+;  171	  gfx_FillRectangle(5, 75, 54, 10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,54
+	PUSH	BC
+	LD	BC,75
+	PUSH	BC
+	LD	BC,5
+	PUSH	BC
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  172	  gfx_FillRectangle(5, 100, 54, 10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,54
+	PUSH	BC
+	LD	BC,100
+	PUSH	BC
+	LD	BC,5
+	PUSH	BC
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  173	  //Title
+;  174	  gfx_SetTextFGColor(gfx_orange);
+	LD	BC,227
+	PUSH	BC
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  175	  gfx_SetTextScale(5, 5);
+	LD	BC,5
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  176	  gfx_PrintStringXY("Julia", 100, 20);
+	LD	BC,20
+	PUSH	BC
+	LD	BC,100
 	PUSH	BC
 	LD	BC,L__21
 	PUSH	BC
@@ -651,10 +665,23 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  151	  gfx_PrintStringXY("ent fractals. Use the + and - keys to", 67, 145);
-	LD	BC,145
+;  177	  //Description
+;  178	  gfx_SetTextFGColor(gfx_green);
+	LD	BC,3
 	PUSH	BC
-	LD	BC,67
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  179	  gfx_SetTextScale(1, 1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  180	  gfx_PrintStringXY("A Julia Set Viewer For the TI-84+CE", 75, 60);
+	LD	BC,60
+	PUSH	BC
+	LD	BC,75
 	PUSH	BC
 	LD	BC,L__22
 	PUSH	BC
@@ -662,10 +689,23 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  152	  gfx_PrintStringXY("change the number of iterations and ", 67, 155);
-	LD	BC,155
+;  181	  //Author
+;  182	  gfx_SetTextFGColor(gfx_orange);
+	LD	BC,227
 	PUSH	BC
-	LD	BC,67
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  183	  gfx_SetTextScale(1, 1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  184	  gfx_PrintStringXY("By Edward Wawrzynek", 170, 70);
+	LD	BC,70
+	PUSH	BC
+	LD	BC,170
 	PUSH	BC
 	LD	BC,L__23
 	PUSH	BC
@@ -673,10 +713,23 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  153	  gfx_PrintStringXY("detail level. Use the ( and ) keys to", 67, 165);
-	LD	BC,165
+;  185	  //Controls Header
+;  186	  gfx_SetTextFGColor(gfx_black);
+	LD	BC,0
 	PUSH	BC
-	LD	BC,67
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  187	  gfx_SetTextScale(2,2);
+	LD	BC,2
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  188	  gfx_PrintStringXY("Controls", 120,85);
+	LD	BC,85
+	PUSH	BC
+	LD	BC,120
 	PUSH	BC
 	LD	BC,L__24
 	PUSH	BC
@@ -684,8 +737,16 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  154	  gfx_PrintStringXY("cycle through the background and f-", 67, 175);
-	LD	BC,175
+;  189	  //Control Text
+;  190	  gfx_SetTextScale(1,1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  191	  gfx_PrintStringXY("A Julia set starts with a complex nu-", 67, 105);
+	LD	BC,105
 	PUSH	BC
 	LD	BC,67
 	PUSH	BC
@@ -695,8 +756,8 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  155	  gfx_PrintStringXY("oreground colors, respectively. Pre-", 67, 185);
-	LD	BC,185
+;  192	  gfx_PrintStringXY("mber C, which is represented by the  ", 67, 115);
+	LD	BC,115
 	PUSH	BC
 	LD	BC,67
 	PUSH	BC
@@ -706,8 +767,8 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  156	  gfx_PrintStringXY("ss enter to begin rendering, and pr-", 67, 195);
-	LD	BC,195
+;  193	  gfx_PrintStringXY("crosshair in the preview. Use the ar-", 67, 125);
+	LD	BC,125
 	PUSH	BC
 	LD	BC,67
 	PUSH	BC
@@ -717,8 +778,8 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  157	  gfx_PrintStringXY("ess any key during rendering to exit.", 67, 205);
-	LD	BC,205
+;  194	  gfx_PrintStringXY("row keys to change it and get differ-", 67, 135);
+	LD	BC,135
 	PUSH	BC
 	LD	BC,67
 	PUSH	BC
@@ -728,8 +789,96 @@ _draw_menu:
 	POP	BC
 	POP	BC
 	POP	BC
-;  158	
-;  159	}
+;  195	  gfx_PrintStringXY("ent fractals. Use the + and - keys to", 67, 145);
+	LD	BC,145
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__29
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  196	  gfx_PrintStringXY("change the number of iterations and ", 67, 155);
+	LD	BC,155
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__30
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  197	  gfx_PrintStringXY("detail level. Use the ( and ) keys to", 67, 165);
+	LD	BC,165
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__31
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  198	  gfx_PrintStringXY("cycle through the background and f-", 67, 175);
+	LD	BC,175
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__32
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  199	  gfx_PrintStringXY("oreground colors, respectively. Pre-", 67, 185);
+	LD	BC,185
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__33
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  200	  gfx_PrintStringXY("ss enter to begin rendering, and pr-", 67, 195);
+	LD	BC,195
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__34
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  201	  gfx_PrintStringXY("ess any key during rendering to exit.", 67, 205);
+	LD	BC,205
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__35
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  202	  gfx_PrintStringXY("Press 2nd to update the preview.", 67, 215);
+	LD	BC,215
+	PUSH	BC
+	LD	BC,67
+	PUSH	BC
+	LD	BC,L__36
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  203	
+;  204	}
 	RET	
 
 
@@ -748,78 +897,169 @@ _draw_menu:
 
 
 	SEGMENT STRSECT
-L__11:
+L__18:
 	DB	"Preview"
 	DB	0
-L__12:
+L__19:
 	DB	"Color 1"
 	DB	0
-L__13:
+L__20:
 	DB	"Color 2"
 	DB	0
-L__14:
+L__21:
 	DB	"Julia"
 	DB	0
-L__15:
+L__22:
 	DB	"A Julia Set Viewer For the TI-84+CE"
 	DB	0
-L__16:
+L__23:
 	DB	"By Edward Wawrzynek"
 	DB	0
-L__17:
+L__24:
 	DB	"Controls"
 	DB	0
-L__18:
+L__25:
 	DB	"A Julia set starts with a complex nu-"
 	DB	0
-L__19:
+L__26:
 	DB	"mber C, which is represented by the  "
 	DB	0
-L__20:
+L__27:
 	DB	"crosshair in the preview. Use the ar-"
 	DB	0
-L__21:
+L__28:
 	DB	"row keys to change it and get differ-"
 	DB	0
-L__22:
+L__29:
 	DB	"ent fractals. Use the + and - keys to"
 	DB	0
-L__23:
+L__30:
 	DB	"change the number of iterations and "
 	DB	0
-L__24:
+L__31:
 	DB	"detail level. Use the ( and ) keys to"
 	DB	0
-L__25:
+L__32:
 	DB	"cycle through the background and f-"
 	DB	0
-L__26:
+L__33:
 	DB	"oreground colors, respectively. Pre-"
 	DB	0
-L__27:
+L__34:
 	DB	"ss enter to begin rendering, and pr-"
 	DB	0
-L__28:
+L__35:
 	DB	"ess any key during rendering to exit."
 	DB	0
+L__36:
+	DB	"Press 2nd to update the preview."
+	DB	0
 	SEGMENT CODE
-;  160	
-;  161	void draw_preview(uint8_t c1, uint8_t c2, int Iter){
-_draw_preview:
-	LD	HL,-11
-	CALL	__frameset
-;  162	  uint16_t x;
-;  163	  uint8_t y;
-;  164	  double zx;
-;  165	  double zy;
-;  166	  //Draw Color previews boxes
-;  167	  gfx_SetColor(c1);
-	LD	C,(IX+6)
+;  205	
+;  206	void draw_iter(){
+_draw_iter:
+;  207	  //Clear Area
+;  208	  gfx_SetColor(gfx_white);
+	LD	BC,255
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  209	  gfx_FillRectangle(5, 110, 54, 40);
+	LD	BC,40
+	PUSH	BC
+	LD	BC,54
+	PUSH	BC
+	LD	BC,110
+	PUSH	BC
+	LD	BC,5
+	PUSH	BC
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  210	  gfx_SetTextFGColor(gfx_black);
+	LD	BC,0
+	PUSH	BC
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  211	  gfx_SetTextScale(1,1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  212	  gfx_PrintStringXY("Iters:", 5, 115);
+	LD	BC,115
+	PUSH	BC
+	LD	BC,5
+	PUSH	BC
+	LD	BC,L__38
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  213	  itoa(Iter, iter_buf,10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,_iter_buf
+	PUSH	BC
+	LD	BC,(_Iter)
+	PUSH	BC
+	CALL	_itoa
+	POP	BC
+	POP	BC
+	POP	BC
+;  214	  gfx_PrintStringXY(iter_buf, 5, 125);
+	LD	BC,125
+	PUSH	BC
+	LD	BC,5
+	PUSH	BC
+	LD	BC,_iter_buf
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  215	}
+	RET	
+
+
+;**************************** _draw_iter ***************************
+;Name                         Addr/Register   Size   Type
+;_Iter                               STATIC      3   variable
+;_iter_buf                           STATIC     20   variable
+;_itoa                               IMPORT  -----   function
+;_gfx_PrintStringXY                  IMPORT  -----   function
+;_gfx_SetTextScale                   IMPORT  -----   function
+;_gfx_SetTextFGColor                 IMPORT  -----   function
+;_gfx_FillRectangle                  IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__38:
+	DB	"Iters:"
+	DB	0
+	SEGMENT CODE
+;  216	
+;  217	void draw_color_preview(){
+_draw_color_preview:
+;  218	  //Draw Color previews boxes
+;  219	  gfx_SetColor(c1);
+	LD	A,(_c1)
+	LD	C,A
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  168	  gfx_FillRectangle(5, 75, 54, 10);
+;  220	  gfx_FillRectangle(5, 75, 54, 10);
 	LD	BC,10
 	PUSH	BC
 	LD	BC,54
@@ -833,13 +1073,14 @@ _draw_preview:
 	POP	BC
 	POP	BC
 	POP	BC
-;  169	  gfx_SetColor(c2);
-	LD	C,(IX+9)
+;  221	  gfx_SetColor(c2);
+	LD	A,(_c2)
+	LD	C,A
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  170	  gfx_FillRectangle(5, 100, 54, 10);
+;  222	  gfx_FillRectangle(5, 100, 54, 10);
 	LD	BC,10
 	PUSH	BC
 	LD	BC,54
@@ -853,18 +1094,134 @@ _draw_preview:
 	POP	BC
 	POP	BC
 	POP	BC
-;  171	
-;  172	  //6 x 6 blocks - resolution 54 x 40 pixels
-;  173	  for(x = 0; x < 27; x++){
+;  223	}
+	RET	
+
+
+;**************************** _draw_color_preview ***************************
+;Name                         Addr/Register   Size   Type
+;_c2                                 STATIC      1   variable
+;_gfx_FillRectangle                  IMPORT  -----   function
+;_c1                                 STATIC      1   variable
+;_gfx_SetColor                       IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  224	
+;  225	void draw_crosshair(){
+_draw_crosshair:
+	LD	HL,-4
+	CALL	__frameset
+;  226	  uint16_t x;
+;  227	  uint16_t y;
+;  228	  x = (uint16_t)(cx*13.5) + 32;
+	LD	HL,5767168
+	LD	E,65
+	LD	BC,(_cx)
+	LD	A,(_cx+3)
+	CALL	__fmul
+	CALL	__ftol
+	LD	IY,BC
+	LEA	HL,IY+32
+	LD	(IX+-2),L
+	LD	(IX+-1),H
+;  229	  y = (uint16_t)(cy*6.66) + 35;
+	LD	HL,13967032
+	LD	BC,(_cy)
+	LD	A,(_cy+3)
+	LD	E,64
+	CALL	__fmul
+	CALL	__ftol
+	LD	IY,BC
+	LEA	HL,IY+35
+	LD	(IX+-4),L
+	LD	(IX+-3),H
+;  230	  //Draw
+;  231	  gfx_SetColor(gfx_black);
+	LD	BC,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  232	  gfx_HorizLine(x-3, y, 7);
+	LD	BC,7
+	PUSH	BC
+	LD	BC,(IX+-4)
+	CALL	__stoiu
+	PUSH	HL
+	LD	BC,(IX+-2)
+	CALL	__stoiu
+	DEC	HL
+	DEC	HL
+	DEC	HL
+	PUSH	HL
+	CALL	_gfx_HorizLine
+	POP	BC
+	POP	BC
+	POP	BC
+;  233	  gfx_VertLine(x,y-3,7);
+	LD	BC,7
+	PUSH	BC
+	LD	BC,(IX+-4)
+	CALL	__stoiu
+	DEC	HL
+	DEC	HL
+	DEC	HL
+	PUSH	HL
+	LD	BC,(IX+-2)
+	CALL	__stoiu
+	PUSH	HL
+	CALL	_gfx_VertLine
+	POP	BC
+	POP	BC
+	POP	BC
+;  234	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _draw_crosshair ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_VertLine                       IMPORT  -----   function
+;_gfx_HorizLine                      IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
+;_cy                                 STATIC      4   variable
+;_cx                                 STATIC      4   variable
+;y                                     IX-4      2   variable
+;x                                     IX-2      2   variable
+
+
+; Stack Frame Size: 10 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  235	
+;  236	void draw_preview(uint8_t c1, uint8_t c2, int Iter){
+_draw_preview:
+	LD	HL,-11
+	CALL	__frameset
+;  237	  uint16_t x;
+;  238	  uint8_t y;
+;  239	  double zx;
+;  240	  double zy;
+;  241	  draw_color_preview();
+	CALL	_draw_color_preview
+;  242	  draw_iter();
+	CALL	_draw_iter
+;  243	  //6 x 6 blocks - resolution 54 x 40 pixels
+;  244	  for(x = 0; x < 27; x++){
 	LD	(IX+-3),0
 	LD	(IX+-2),0
-	JR	L_36
-L_34:
-;  174	    for(y = 0; y < 40; y++){
+	JR	L_52
+L_50:
+;  245	    for(y = 0; y < 40; y++){
 	LD	(IX+-1),0
-	JR	L_33
-L_31:
-;  175	      zx = (((double)x)*0.074)-2.0;
+	JR	L_49
+L_47:
+;  246	      zx = (((double)x)*0.074)-2.0;
 	LD	BC,(IX+-3)
 	CALL	__stoiu
 	LD	BC,HL
@@ -879,7 +1236,7 @@ L_31:
 	CALL	__fsub
 	LD	(IX+-7),BC
 	LD	(IX+-4),A
-;  176	      zy = (((double)y)*0.075)-1.5;
+;  247	      zy = (((double)y)*0.075)-1.5;
 	UEXT	HL
 	LD	L,(IX+-1)
 	LD	A,H
@@ -893,7 +1250,7 @@ L_31:
 	CALL	__fsub
 	LD	(IX+-11),BC
 	LD	(IX+-8),A
-;  177	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
+;  248	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
 	LD	A,(_cy+3)
 	LD	C,A
 	LD	B,0
@@ -924,26 +1281,26 @@ L_31:
 	LD	BC,1
 	SBC	HL,BC
 	LD	SP,IY
-	JR	NZ,L_29
-;  178	        gfx_SetColor(c2);
+	JR	NZ,L_45
+;  249	        gfx_SetColor(c2);
 	LD	C,(IX+9)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  179	      }
-;  180	      else{
-	JR	L_30
-L_29:
-;  181	        gfx_SetColor(c1);
+;  250	      }
+;  251	      else{
+	JR	L_46
+L_45:
+;  252	        gfx_SetColor(c1);
 	LD	C,(IX+6)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  182	      }
-L_30:
-;  183	      gfx_SetPixel(x+5, y+15);
+;  253	      }
+L_46:
+;  254	      gfx_SetPixel(x+5, y+15);
 	LD	A,(IX+-1)
 	ADD	A,15
 	LD	C,A
@@ -957,7 +1314,7 @@ L_30:
 	CALL	_gfx_SetPixel
 	POP	BC
 	POP	BC
-;  184	      gfx_SetPixel(58-x, 54-y);
+;  255	      gfx_SetPixel(58-x, 54-y);
 	LD	A,54
 	SUB	A,(IX+-1)
 	LD	C,A
@@ -974,55 +1331,27 @@ L_30:
 	POP	BC
 	POP	BC
 	INC	(IX+-1)
-;  185	    }
-L_33:
+;  256	    }
+L_49:
 	LD	A,(IX+-1)
 	CP	A,40
-	JR	C,L_31
+	JR	C,L_47
 	LD	HL,(IX+-3)
 	INC	HL
 	LD	(IX+-3),L
 	LD	(IX+-2),H
-;  186	  }
-L_36:
+;  257	  }
+L_52:
 	LD.LIS	BC,27
 	LD	HL,(IX+-3)
 	OR	A,A
 	SBC.SIS	HL,BC
-	JR	C,L_34
-;  187	  //Draw Small crosshair indicating where the c value is
-;  188	  //Convert from floating c to real location
-;  189	  x = 15;
-;  190	  y = 25;
-;  191	  //Draw
-;  192	  gfx_SetColor(gfx_black);
-	LD	BC,0
-	PUSH	BC
-	CALL	_gfx_SetColor
-	POP	BC
-;  193	  gfx_HorizLine(x-3, y, 7);
-	LD	BC,7
-	PUSH	BC
-	LD	BC,25
-	PUSH	BC
-	LD	BC,12
-	PUSH	BC
-	CALL	_gfx_HorizLine
-	POP	BC
-	POP	BC
-	POP	BC
-;  194	  gfx_VertLine(x,y-3,7);
-	LD	BC,7
-	PUSH	BC
-	LD	BC,22
-	PUSH	BC
-	LD	BC,15
-	PUSH	BC
-	CALL	_gfx_VertLine
-	POP	BC
-	POP	BC
-	POP	BC
-;  195	}
+	JR	C,L_50
+;  258	  //Draw Small crosshair indicating where the c value is
+;  259	  //Convert from floating c to real location
+;  260	  draw_crosshair();
+	CALL	_draw_crosshair
+;  261	}
 	LD	SP,IX
 	POP	IX
 	RET	
@@ -1030,14 +1359,14 @@ L_36:
 
 ;**************************** _draw_preview ***************************
 ;Name                         Addr/Register   Size   Type
-;_gfx_VertLine                       IMPORT  -----   function
-;_gfx_HorizLine                      IMPORT  -----   function
+;_draw_crosshair                     IMPORT  -----   function
 ;_gfx_SetPixel                       IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
 ;_cx                                 STATIC      4   variable
 ;_cy                                 STATIC      4   variable
 ;_juliaPixel                         IMPORT  -----   function
-;_gfx_FillRectangle                  IMPORT  -----   function
-;_gfx_SetColor                       IMPORT  -----   function
+;_draw_iter                          IMPORT  -----   function
+;_draw_color_preview                 IMPORT  -----   function
 ;zy                                   IX-11      4   variable
 ;zx                                    IX-7      4   variable
 ;x                                     IX-3      2   variable
@@ -1051,24 +1380,24 @@ L_36:
 ;       Spill Code: 0 (instruction)
 
 
-;  196	
-;  197	int juliaPixel(double x, double y, int i, double cx, double cy){
+;  262	
+;  263	int juliaPixel(double x, double y, int i, double cx, double cy){
 _juliaPixel:
 	LD	HL,-15
 	CALL	__frameset
-;  198	  int n;
-;  199	  double tempX;
-;  200	  for(n = 0; n < i; n++){
+;  264	  int n;
+;  265	  double tempX;
+;  266	  for(n = 0; n < i; n++){
 	LD	BC,0
 	LD	(IX+-3),BC
-	JR	L_43
-L_41:
-;  201	    tempX = x;
+	JR	L_59
+L_57:
+;  267	    tempX = x;
 	LD	BC,(IX+6)
 	LD	A,(IX+9)
 	LD	(IX+-7),BC
 	LD	(IX+-4),A
-;  202	    x = (x*x)-(y*y) + cx;
+;  268	    x = (x*x)-(y*y) + cx;
 	LD	HL,(IX+6)
 	LD	E,(IX+9)
 	LD	BC,(IX+6)
@@ -1091,7 +1420,7 @@ L_41:
 	CALL	__fadd
 	LD	(IX+6),BC
 	LD	(IX+9),A
-;  203	    y = (2.0*tempX*y) + cy;
+;  269	    y = (2.0*tempX*y) + cy;
 	LD	BC,(IX+-7)
 	LD	A,(IX+-4)
 	OR	A,A
@@ -1106,7 +1435,7 @@ L_41:
 	CALL	__fadd
 	LD	(IX+12),BC
 	LD	(IX+15),A
-;  204	    if((x*x) + (y*y) > 2.0){
+;  270	    if((x*x) + (y*y) > 2.0){
 	LD	HL,(IX+6)
 	LD	E,(IX+9)
 	LD	BC,(IX+6)
@@ -1128,27 +1457,27 @@ L_41:
 	SBC	HL,HL
 	LD	E,64
 	CALL	__fcmp
-	JP	P,L_42
+	JP	P,L_58
 	OR	A,A
-;  205	      return 0;
+;  271	      return 0;
 	SBC	HL,HL
-	JR	L_45
-;  206	    }
-;  207	  }
-L_42:
+	JR	L_61
+;  272	    }
+;  273	  }
+L_58:
 	LD	BC,(IX+-3)
 	INC	BC
 	LD	(IX+-3),BC
-L_43:
+L_59:
 	LD	BC,(IX+18)
 	LD	HL,(IX+-3)
 	OR	A,A
 	SBC	HL,BC
-	JP	M,L_41
-;  208	  return 1;
+	JP	M,L_57
+;  274	  return 1;
 	LD	HL,1
-;  209	}
-L_45:
+;  275	}
+L_61:
 	LD	SP,IX
 	POP	IX
 	RET	
@@ -1169,27 +1498,27 @@ L_45:
 ;       Spill Code: 0 (instruction)
 
 
-;  210	
-;  211	int render_rough(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
+;  276	
+;  277	int render_rough(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
 _render_rough:
 	LD	HL,-11
 	CALL	__frameset
-;  212	  //4 x 4 blocks
-;  213	  uint16_t x;
-;  214	  uint8_t y;
-;  215	  //Z value
-;  216	  double zx;
-;  217	  double zy;
-;  218	  for(x = 0; x < xLim; x+=4){
+;  278	  //4 x 4 blocks
+;  279	  uint16_t x;
+;  280	  uint8_t y;
+;  281	  //Z value
+;  282	  double zx;
+;  283	  double zy;
+;  284	  for(x = 0; x < xLim; x+=4){
 	LD	(IX+-3),0
 	LD	(IX+-2),0
-	JR	L_56
-L_54:
-;  219	    for(y = 0; y < yLim; y+=4){
+	JR	L_72
+L_70:
+;  285	    for(y = 0; y < yLim; y+=4){
 	LD	(IX+-1),0
-	JR	L_51
-L_49:
-;  220	      zx = (((double)x)*0.0125)-2.0;
+	JR	L_67
+L_65:
+;  286	      zx = (((double)x)*0.0125)-2.0;
 	LD	BC,(IX+-3)
 	CALL	__stoiu
 	LD	BC,HL
@@ -1204,7 +1533,7 @@ L_49:
 	CALL	__fsub
 	LD	(IX+-7),BC
 	LD	(IX+-4),A
-;  221	      zy = (((double)y)*0.0125)-1.5;
+;  287	      zy = (((double)y)*0.0125)-1.5;
 	UEXT	HL
 	LD	L,(IX+-1)
 	LD	A,H
@@ -1218,7 +1547,7 @@ L_49:
 	CALL	__fsub
 	LD	(IX+-11),BC
 	LD	(IX+-8),A
-;  222	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
+;  288	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
 	LD	C,(IX+15)
 	LD	B,0
 	PUSH	BC
@@ -1248,26 +1577,26 @@ L_49:
 	LD	BC,1
 	SBC	HL,BC
 	LD	SP,IY
-	JR	NZ,L_47
-;  223	        gfx_SetColor(c1);
+	JR	NZ,L_63
+;  289	        gfx_SetColor(c1);
 	LD	C,(IX+18)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  224	      }
-;  225	      else{
-	JR	L_48
-L_47:
-;  226	        gfx_SetColor(c2);
+;  290	      }
+;  291	      else{
+	JR	L_64
+L_63:
+;  292	        gfx_SetColor(c2);
 	LD	C,(IX+21)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  227	      }
-L_48:
-;  228	      gfx_FillRectangle(x, y, 4, 4);
+;  293	      }
+L_64:
+;  294	      gfx_FillRectangle(x, y, 4, 4);
 	LD	BC,4
 	PUSH	BC
 	PUSH	BC
@@ -1283,7 +1612,7 @@ L_48:
 	POP	BC
 	POP	BC
 	POP	BC
-;  229	      gfx_FillRectangle(316-x, 236-y, 4, 4);
+;  295	      gfx_FillRectangle(316-x, 236-y, 4, 4);
 	LD	BC,4
 	PUSH	BC
 	PUSH	BC
@@ -1310,38 +1639,38 @@ L_48:
 	LD	A,(IX+-1)
 	ADD	A,4
 	LD	(IX+-1),A
-;  230	    }
-L_51:
+;  296	    }
+L_67:
 	LD	A,(IX+-1)
 	CP	A,240
-	JR	C,L_49
-;  231	    if(os_GetCSC()){
+	JR	C,L_65
+;  297	    if(os_GetCSC()){
 	CALL	_os_GetCSC
 	OR	A,A
-	JR	Z,L_55
-;  232	      gfx_End();
+	JR	Z,L_71
+;  298	      gfx_End();
 	CALL	_gfx_End
-;  233	      return 1;
+;  299	      return 1;
 	LD	HL,1
-	JR	L_58
-;  234	    }
-;  235	  }
-L_55:
+	JR	L_74
+;  300	    }
+;  301	  }
+L_71:
 	LD	IY,(IX+-3)
 	LEA	HL,IY+4
 	LD	(IX+-3),L
 	LD	(IX+-2),H
-L_56:
+L_72:
 	LD.LIS	BC,160
 	LD	HL,(IX+-3)
 	OR	A,A
 	SBC.SIS	HL,BC
-	JR	C,L_54
+	JR	C,L_70
 	OR	A,A
-;  236	  return 0;
+;  302	  return 0;
 	SBC	HL,HL
-;  237	}
-L_58:
+;  303	}
+L_74:
 	LD	SP,IX
 	POP	IX
 	RET	
@@ -1369,27 +1698,27 @@ L_58:
 ;       Spill Code: 0 (instruction)
 
 
-;  238	
-;  239	int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
+;  304	
+;  305	int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
 _render_full:
 	LD	HL,-11
 	CALL	__frameset
-;  240	  //Per pixel render
-;  241	  uint16_t x;
-;  242	  uint8_t y;
-;  243	  //Z value
-;  244	  double zx;
-;  245	  double zy;
-;  246	  for(x = 0; x < xLim; x++){
+;  306	  //Per pixel render
+;  307	  uint16_t x;
+;  308	  uint8_t y;
+;  309	  //Z value
+;  310	  double zx;
+;  311	  double zy;
+;  312	  for(x = 0; x < xLim; x++){
 	LD	(IX+-3),0
 	LD	(IX+-2),0
-	JR	L_71
-L_69:
-;  247	    for(y = 0; y < yLim; y++){
+	JR	L_87
+L_85:
+;  313	    for(y = 0; y < yLim; y++){
 	LD	(IX+-1),0
-	JR	L_66
-L_64:
-;  248	      zx = (((double)x)*0.0125)-2.0;
+	JR	L_82
+L_80:
+;  314	      zx = (((double)x)*0.0125)-2.0;
 	LD	BC,(IX+-3)
 	CALL	__stoiu
 	LD	BC,HL
@@ -1404,7 +1733,7 @@ L_64:
 	CALL	__fsub
 	LD	(IX+-7),BC
 	LD	(IX+-4),A
-;  249	      zy = (((double)y)*0.0125)-1.5;
+;  315	      zy = (((double)y)*0.0125)-1.5;
 	UEXT	HL
 	LD	L,(IX+-1)
 	LD	A,H
@@ -1418,7 +1747,7 @@ L_64:
 	CALL	__fsub
 	LD	(IX+-11),BC
 	LD	(IX+-8),A
-;  250	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
+;  316	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
 	LD	C,(IX+15)
 	LD	B,0
 	PUSH	BC
@@ -1448,26 +1777,26 @@ L_64:
 	LD	BC,1
 	SBC	HL,BC
 	LD	SP,IY
-	JR	NZ,L_62
-;  251	        gfx_SetColor(c1);
+	JR	NZ,L_78
+;  317	        gfx_SetColor(c1);
 	LD	C,(IX+18)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  252	      }
-;  253	      else{
-	JR	L_63
-L_62:
-;  254	        gfx_SetColor(c2);
+;  318	      }
+;  319	      else{
+	JR	L_79
+L_78:
+;  320	        gfx_SetColor(c2);
 	LD	C,(IX+21)
 	LD	B,0
 	PUSH	BC
 	CALL	_gfx_SetColor
 	POP	BC
-;  255	      }
-L_63:
-;  256	      gfx_SetPixel(x, y);
+;  321	      }
+L_79:
+;  322	      gfx_SetPixel(x, y);
 	LD	C,(IX+-1)
 	LD	B,0
 	PUSH	BC
@@ -1477,7 +1806,7 @@ L_63:
 	CALL	_gfx_SetPixel
 	POP	BC
 	POP	BC
-;  257	      gfx_SetPixel(319-x, 239-y);
+;  323	      gfx_SetPixel(319-x, 239-y);
 	LD	A,239
 	SUB	A,(IX+-1)
 	LD	C,A
@@ -1494,38 +1823,38 @@ L_63:
 	POP	BC
 	POP	BC
 	INC	(IX+-1)
-;  258	    }
-L_66:
+;  324	    }
+L_82:
 	LD	A,(IX+-1)
 	CP	A,240
-	JR	C,L_64
-;  259	    if(os_GetCSC()){
+	JR	C,L_80
+;  325	    if(os_GetCSC()){
 	CALL	_os_GetCSC
 	OR	A,A
-	JR	Z,L_70
-;  260	      gfx_End();
+	JR	Z,L_86
+;  326	      gfx_End();
 	CALL	_gfx_End
-;  261	      return 1;
+;  327	      return 1;
 	LD	HL,1
-	JR	L_73
-;  262	    }
-;  263	  }
-L_70:
+	JR	L_89
+;  328	    }
+;  329	  }
+L_86:
 	LD	HL,(IX+-3)
 	INC	HL
 	LD	(IX+-3),L
 	LD	(IX+-2),H
-L_71:
+L_87:
 	LD.LIS	BC,160
 	LD	HL,(IX+-3)
 	OR	A,A
 	SBC.SIS	HL,BC
-	JR	C,L_69
+	JR	C,L_85
 	OR	A,A
-;  264	  return 0;
+;  330	  return 0;
 	SBC	HL,HL
-;  265	}
-L_73:
+;  331	}
+L_89:
 	LD	SP,IX
 	POP	IX
 	RET	
@@ -1553,39 +1882,39 @@ L_73:
 ;       Spill Code: 0 (instruction)
 
 
-;  266	
-;  267	void wait(uint16_t ms){
+;  332	
+;  333	void wait(uint16_t ms){
 _wait:
 	LD	HL,-4
 	CALL	__frameset
-;  268	  uint16_t i;
-;  269	  uint16_t cycles;
-;  270	  cycles = ms/10;
+;  334	  uint16_t i;
+;  335	  uint16_t cycles;
+;  336	  cycles = ms/10;
 	LD	BC,(IX+6)
 	CALL	__stoiu
 	LD	BC,10
 	CALL	__idivs
 	LD	(IX+-4),L
 	LD	(IX+-3),H
-;  271	  for(i = 0; i < cycles; i++){
+;  337	  for(i = 0; i < cycles; i++){
 	LD	(IX+-2),0
 	LD	(IX+-1),0
-	JR	L_77
-L_75:
-;  272	    boot_WaitShort();
+	JR	L_93
+L_91:
+;  338	    boot_WaitShort();
 	CALL	_boot_WaitShort
 	LD	HL,(IX+-2)
 	INC	HL
 	LD	(IX+-2),L
 	LD	(IX+-1),H
-;  273	  }
-L_77:
+;  339	  }
+L_93:
 	LD	BC,(IX+-4)
 	LD	HL,(IX+-2)
 	OR	A,A
 	SBC.SIS	HL,BC
-	JR	C,L_75
-;  274	}
+	JR	C,L_91
+;  340	}
 	LD	SP,IX
 	POP	IX
 	RET	
@@ -1603,6 +1932,250 @@ L_77:
 ;       Spill Code: 0 (instruction)
 
 
+;  341	
+;  342	char * reverse(char* s)
+;  343	{
+_reverse:
+	LD	HL,-7
+	CALL	__frameset
+;  344	  int i, j;
+;  345	  char c;
+;  346	  i = 0;
+	LD	BC,0
+	LD	(IX+-3),BC
+;  347	  j = strlen(s) - 1;
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_strlen
+	POP	BC
+	DEC	HL
+	LD	(IX+-6),HL
+;  348	  while (i < j){
+	JR	L_97
+L_98:
+;  349	    c = s[i];
+	LD	BC,(IX+-3)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	A,(HL)
+	LD	(IX+-7),A
+;  350	    s[i] = s[j];
+	LD	BC,(IX+-6)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	IY,HL
+	LD	HL,(IX+6)
+	LD	BC,(IX+-3)
+	ADD	HL,BC
+	LD	A,(IY)
+	LD	(HL),A
+;  351	    s[j] = c;
+	LD	BC,(IX+-6)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	A,(IX+-7)
+	LD	(HL),A
+;  352	    i++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  353	    j--;
+	LD	BC,(IX+-6)
+	DEC	BC
+	LD	(IX+-6),BC
+;  354	  }
+L_97:
+	LD	BC,(IX+-6)
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JP	M,L_98
+;  355	        return s;
+	LD	HL,(IX+6)
+;  356	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _reverse ***************************
+;Name                         Addr/Register   Size   Type
+;_strlen                             IMPORT  -----   function
+;c                                     IX-7      1   variable
+;j                                     IX-6      3   variable
+;i                                     IX-3      3   variable
+;s                                     IX+6      3   parameter
+
+
+; Stack Frame Size: 16 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  357	
+;  358	// Implementation of itoa()
+;  359	char* itoa(int num, char* str, int base)
+;  360	{
+_itoa:
+	LD	HL,-13
+	CALL	__frameset
+;  361	    int i = 0;
+	LD	BC,0
+	LD	(IX+-3),BC
+;  362	    bool isNegative = false;
+	LD	(IX+-4),0
+;  363	
+;  364	    /* Handle 0 explicitely, otherwise empty string is printed for 0 */
+;  365	    if (num == 0)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_105
+;  366	    {
+;  367	        str[i++] = '0';
+	LD	HL,(IX+9)
+	LD	(HL),48
+;  368	        str[i] = '\0';
+	LD	HL,(IX+9)
+	INC	HL
+	LD	(HL),0
+;  369	        return str;
+	LD	HL,(IX+9)
+	JR	L_118
+;  370	    }
+L_105:
+;  371	
+;  372	    // In standard itoa(), negative numbers are handled only with
+;  373	    // base 10. Otherwise numbers are considered unsigned.
+;  374	    if (num < 0 && base == 10)
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JP	P,L__69
+	JP	PE,L_111
+	JR	L__70
+L__69:
+	JP	PO,L_111
+L__70:
+	LD	BC,10
+	LD	HL,(IX+12)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_111
+;  375	    {
+;  376	        isNegative = true;
+	LD	(IX+-4),1
+;  377	        num = -num;
+	LD	HL,(IX+6)
+	CALL	__ineg
+	LD	(IX+6),HL
+;  378	    }
+;  379	
+;  380	    // Process individual digits
+;  381	    while (num != 0)
+	JR	L_111
+L_112:
+;  382	    {
+;  383	        int rem = num % base;
+	LD	HL,(IX+6)
+	LD	BC,(IX+12)
+	CALL	__irems
+	LD	(IX+-7),HL
+;  384	        str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+	LD	BC,HL
+	LD	HL,9
+	OR	A,A
+	SBC	HL,BC
+	JP	P,L__71
+	JP	PE,L_109
+	JR	L__72
+L__71:
+	JP	PO,L_109
+L__72:
+	LD	IY,(IX+-7)
+	LEA	IY,IY+87
+	LD	(IX+-10),IY
+	JR	L_110
+L_109:
+	LD	IY,(IX+-7)
+	LEA	IY,IY+48
+	LD	(IX+-10),IY
+L_110:
+	LD	BC,(IX+-3)
+	LD	(IX+-13),BC
+	LD	HL,(IX+9)
+	ADD	HL,BC
+	LD	A,(IX+-10)
+	LD	(HL),A
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  385	        num = num/base;
+	LD	HL,(IX+6)
+	LD	BC,(IX+12)
+	CALL	__idivs
+	LD	(IX+6),HL
+;  386	    }
+L_111:
+	LD	BC,0
+	LD	HL,(IX+6)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_112
+;  387	
+;  388	    // If number is negative, append '-'
+;  389	    if (isNegative)
+	LD	A,(IX+-4)
+	OR	A,A
+	JR	Z,L_117
+;  390	        str[i++] = '-';
+	LD	BC,(IX+-3)
+	LD	HL,(IX+9)
+	ADD	HL,BC
+	LD	(HL),45
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+L_117:
+;  391	
+;  392	    str[i] = '\0'; // Append string terminator
+	LD	BC,(IX+-3)
+	LD	HL,(IX+9)
+	ADD	HL,BC
+	LD	(HL),0
+;  393	
+;  394	    // Reverse the string
+;  395	    reverse(str);
+	LD	BC,(IX+9)
+	PUSH	BC
+	CALL	_reverse
+	POP	BC
+;  396	
+;  397	    return str;
+	LD	HL,(IX+9)
+;  398	}
+L_118:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _itoa ***************************
+;Name                         Addr/Register   Size   Type
+;_reverse                            IMPORT  -----   function
+;temp106                              IX-13      3   variable
+;temp107                              IX-10      3   variable
+;rem                                   IX-7      3   variable
+;isNegative                            IX-4      1   variable
+;i                                     IX-3      3   variable
+;base                                 IX+12      3   parameter
+;str                                   IX+9      3   parameter
+;num                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 28 (bytes)
+;       Spill Code: 0 (instruction)
+
+
 	XREF _kb_Scan:ROM
 	XREF _gfx_SetTextFGColor:ROM
 	XREF _gfx_PrintStringXY:ROM
@@ -1615,26 +2188,35 @@ L_77:
 	XREF _gfx_SetColor:ROM
 	XREF _gfx_End:ROM
 	XREF _gfx_Begin:ROM
+	XREF _strlen:ROM
 	XREF _os_GetCSC:ROM
 	XREF _boot_WaitShort:ROM
 	XREF __idivs:ROM
+	XREF __ineg:ROM
 	XREF __irems:ROM
 	XREF __fadd:ROM
 	XREF __fsub:ROM
 	XREF __fmul:ROM
 	XREF __fcmp:ROM
+	XREF __ftol:ROM
 	XREF __ultof:ROM
 	XREF __stoiu:ROM
 	XREF __frameset:ROM
+	XDEF _itoa
+	XDEF _reverse
 	XDEF _wait
 	XDEF _render_full
 	XDEF _render_rough
 	XDEF _juliaPixel
 	XDEF _draw_preview
+	XDEF _draw_crosshair
+	XDEF _draw_color_preview
+	XDEF _draw_iter
 	XDEF _draw_menu
 	XDEF _menu_keys
 	XDEF _start_screen
 	XDEF _main
+	XDEF _iter_buf
 	XDEF _Iter
 	XDEF _c2
 	XDEF _c1
