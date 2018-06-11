@@ -1,0 +1,1065 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -nomodsect -optspeed -noreduceopt -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"..\SRC\MAIN.C"
+	.assume ADL=1
+	SEGMENT CODE
+;    1	/*
+;    2	 *--------------------------------------
+;    3	 * Program Name:
+;    4	 * Author:
+;    5	 * License:
+;    6	 * Description:
+;    7	 *--------------------------------------
+;    8	*/
+;    9	
+;   10	/* Keep these headers */
+;   11	#include <stdbool.h>
+;   12	#include <stddef.h>
+;   13	#include <stdint.h>
+;   14	#include <tice.h>
+;   15	
+;   16	/* Standard headers (recommended) */
+;   17	#include <math.h>
+;   18	#include <stdio.h>
+;   19	#include <stdlib.h>
+;   20	#include <string.h>
+;   21	
+;   22	#include <graphx.h>
+;   23	#include <keypadc.h>
+;   24	
+;   25	/* Put your function prototypes here */
+;   26	void printText(char *text, uint8_t x, uint8_t y);
+;   27	int juliaPixel(float x, float y, int i, float cx, float cy);
+;   28	int promptStr(char *str, int line);
+;   29	int render_rough(double cx, double cy, uint8_t c1, uint8_t c2, int Iter);
+;   30	int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter);
+;   31	/* Put all your globals here */
+;   32	
+;   33	//How far to render
+;   34	#define xLim 160
+;   35	#define yLim 240
+;   36	
+;   37	#define ROUGH_ITER 5
+;   38	
+;   39	void main(void) {
+_main:
+;   40	    //C value
+;   41	    double cx = 0.4;
+;   42	    double cy = -0.1;
+;   43	    //Forground and background colors
+;   44	    uint8_t c1 = gfx_RGBTo1555(255,125,0);
+;   45	    uint8_t c2 = gfx_RGBTo1555(0,0,255);
+;   46	    //Rendering parameters
+;   47	    int Iter = 12;
+;   48	    /* Fill in the body of the main function here */
+;   49	
+;   50	    gfx_Begin(gfx_8bpp);
+	LD	BC,39
+	PUSH	BC
+	CALL	_gfx_Begin
+	POP	BC
+;   51	    //Do a rough outline
+;   52	    if(render_rough(cx, cy, c1, c2, ROUGH_ITER)){return;};
+	LD	BC,5
+	PUSH	BC
+	LD	BC,31
+	PUSH	BC
+	LD	BC,224
+	PUSH	BC
+	LD	C,189
+	LD	B,0
+	PUSH	BC
+	LD	C,62
+	LD	DE,13421773
+	PUSH	DE
+	PUSH	BC
+	LD	BC,13421773
+	PUSH	BC
+	CALL	_render_rough
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	BC,0
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_7
+;   53	    //Full render
+;   54	    if(render_full(cx, cy, c2, c1, Iter)){return;};
+	LD	BC,12
+	PUSH	BC
+	LD	BC,224
+	PUSH	BC
+	LD	BC,31
+	PUSH	BC
+	LD	C,189
+	LD	B,0
+	PUSH	BC
+	LD	C,62
+	LD	DE,13421773
+	PUSH	DE
+	PUSH	BC
+	LD	BC,13421773
+	PUSH	BC
+	CALL	_render_full
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	BC,0
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_7
+;   55	    //Wait for keypress to exit
+;   56	    while (!os_GetCSC());
+L_5:
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	Z,L_5
+;   57	    gfx_End();
+	CALL	_gfx_End
+;   58	}
+L_7:
+	RET	
+
+
+;**************************** _main ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_End                            IMPORT  -----   function
+;_os_GetCSC                          IMPORT  -----   function
+;_render_full                        IMPORT  -----   function
+;_render_rough                       IMPORT  -----   function
+;_gfx_Begin                          IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   59	
+;   60	/* Put other functions here */
+;   61	int promptStr(char *str, int line){
+_promptStr:
+	LD	HL,-9
+	CALL	__frameset
+;   62	  kb_key_t key;
+;   63	  int index = 0;
+	LD	BC,0
+	LD	(IX+-3),BC
+;   64	  int pKey = 0;
+	LD	(IX+-9),BC
+;   65	  while(true){
+L_64:
+;   66	    printText(str, 0, line);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_printText
+	POP	BC
+	POP	BC
+	POP	BC
+;   67	    kb_Scan();
+	CALL	_kb_Scan
+;   68	    str[index] = '_';
+	LD	BC,(IX+-3)
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	(IX+-6),HL
+	LD	(HL),95
+;   69	    if((kb_Data[3] & kb_0) && !pKey){
+	LD	A,(16056342)
+	AND	A,1
+	JR	Z,L_62
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_62
+;   70	      str[index] = '0';
+	LD	HL,(IX+-6)
+	LD	(HL),48
+;   71	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   72	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   73	    }
+;   74	    else if((kb_Data[3] & kb_1) && !pKey){
+	JR	L_64
+L_62:
+	LD	A,(16056342)
+	AND	A,2
+	JR	Z,L_60
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_60
+;   75	      str[index] = '1';
+	LD	HL,(IX+-6)
+	LD	(HL),49
+;   76	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   77	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   78	    }
+;   79	    else if((kb_Data[4] & kb_2) && !pKey){
+	JR	L_64
+L_60:
+	LD	A,(16056344)
+	AND	A,2
+	JR	Z,L_58
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_58
+;   80	      str[index] = '2';
+	LD	HL,(IX+-6)
+	LD	(HL),50
+;   81	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   82	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   83	    }
+;   84	    else if((kb_Data[5] & kb_3) && !pKey){
+	JR	L_64
+L_58:
+	LD	A,(16056346)
+	AND	A,2
+	JR	Z,L_56
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_56
+;   85	      str[index] = '3';
+	LD	HL,(IX+-6)
+	LD	(HL),51
+;   86	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   87	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   88	    }
+;   89	    else if((kb_Data[3] & kb_4) && !pKey){
+	JR	L_64
+L_56:
+	LD	A,(16056342)
+	AND	A,4
+	JR	Z,L_54
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_54
+;   90	      str[index] = '4';
+	LD	HL,(IX+-6)
+	LD	(HL),52
+;   91	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   92	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   93	    }
+;   94	     else if((kb_Data[4] & kb_5) && !pKey){
+	JR	L_64
+L_54:
+	LD	A,(16056344)
+	AND	A,4
+	JR	Z,L_52
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_52
+;   95	      str[index] = '5';
+	LD	HL,(IX+-6)
+	LD	(HL),53
+;   96	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;   97	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;   98	    }
+;   99	    else if((kb_Data[5] & kb_6) && !pKey){
+	JR	L_64
+L_52:
+	LD	A,(16056346)
+	AND	A,4
+	JR	Z,L_50
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_50
+;  100	      str[index] = '6';
+	LD	HL,(IX+-6)
+	LD	(HL),54
+;  101	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  102	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  103	    }
+;  104	    else if((kb_Data[3] & kb_7) && !pKey){
+	JR	L_64
+L_50:
+	LD	A,(16056342)
+	AND	A,8
+	JR	Z,L_48
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_48
+;  105	      str[index] = '7';
+	LD	HL,(IX+-6)
+	LD	(HL),55
+;  106	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  107	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  108	    }
+;  109	    else if((kb_Data[4] & kb_8) && !pKey){
+	JR	L_64
+L_48:
+	LD	A,(16056344)
+	AND	A,8
+	JR	Z,L_46
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_46
+;  110	      str[index] = '8';
+	LD	HL,(IX+-6)
+	LD	(HL),56
+;  111	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  112	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  113	    }
+;  114	    else if((kb_Data[5] & kb_9) && !pKey){
+	JR	L_64
+L_46:
+	LD	A,(16056346)
+	AND	A,8
+	JR	Z,L_44
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_44
+;  115	      str[index] = '9';
+	LD	HL,(IX+-6)
+	LD	(HL),57
+;  116	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  117	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  118	    }
+;  119	    else if((kb_Data[4] & kb_DecPnt) && !pKey){
+	JR	L_64
+L_44:
+	LD	A,(16056344)
+	AND	A,1
+	JR	Z,L_42
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_42
+;  120	      str[index] = '.';
+	LD	HL,(IX+-6)
+	LD	(HL),46
+;  121	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  122	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  123	    }
+;  124	    else if((kb_Data[5] & kb_Chs) && !pKey){
+	JR	L_64
+L_42:
+	LD	A,(16056346)
+	AND	A,1
+	JR	Z,L_40
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_40
+;  125	      str[index] = '-';
+	LD	HL,(IX+-6)
+	LD	(HL),45
+;  126	      index ++;
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+;  127	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  128	    }
+;  129	    else if((kb_Data[1] & kb_Del) && !pKey){
+	JR	L_64
+L_40:
+	LD	A,(16056338)
+	AND	A,128
+	JR	Z,L_38
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_38
+;  130	      str[index] = ' ';
+	LD	HL,(IX+-6)
+	LD	(HL),32
+;  131	      str[index -1 ] = '_';
+	LD	BC,(IX+-3)
+	DEC	BC
+	LD	HL,(IX+6)
+	ADD	HL,BC
+	LD	(HL),95
+;  132	      index--;
+	LD	(IX+-3),BC
+;  133	      pKey = 1;
+	LD	BC,1
+	LD	(IX+-9),BC
+;  134	    }
+;  135	    else if((kb_Data[6] & kb_Enter) && !pKey){
+	JR	L_64
+L_38:
+	LD	A,(16056348)
+	AND	A,1
+	JR	Z,L_36
+	LD	BC,0
+	LD	HL,(IX+-9)
+	OR	A,A
+	SBC	HL,BC
+	JR	NZ,L_36
+;  136	      str[index] = ' ';
+	LD	HL,(IX+-6)
+	LD	(HL),32
+;  137	      return 1;
+	LD	HL,1
+	JR	L_65
+;  138	    }
+;  139	    else{
+L_36:
+;  140	      pKey = 0;
+	LD	BC,0
+	LD	(IX+-9),BC
+	JR	L_64
+;  141	    }
+;  142	  }
+;  143	}
+L_65:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _promptStr ***************************
+;Name                         Addr/Register   Size   Type
+;_kb_Scan                            IMPORT  -----   function
+;_printText                          IMPORT  -----   function
+;pKey                                  IX-9      3   variable
+;G_0                                   IX-6      3   variable
+;index                                 IX-3      3   variable
+;line                                  IX+9      3   parameter
+;str                                   IX+6      3   parameter
+
+
+; Stack Frame Size: 21 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  144	
+;  145	void printText(char *text, uint8_t xpos, uint8_t ypos) {
+_printText:
+	CALL	__frameset0
+;  146	    os_SetCursorPos(ypos, xpos);
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	C,(IX+12)
+	PUSH	BC
+	CALL	_os_SetCursorPos
+	POP	BC
+	POP	BC
+;  147	    os_PutStrFull(text);
+	LD	BC,(IX+6)
+	PUSH	BC
+	CALL	_os_PutStrFull
+	POP	BC
+;  148	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _printText ***************************
+;Name                         Addr/Register   Size   Type
+;_os_PutStrFull                      IMPORT  -----   function
+;_os_SetCursorPos                    IMPORT  -----   function
+;ypos                                 IX+12      1   parameter
+;xpos                                  IX+9      1   parameter
+;text                                  IX+6      3   parameter
+
+
+; Stack Frame Size: 15 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  149	
+;  150	int juliaPixel(double x, double y, int i, double cx, double cy){
+_juliaPixel:
+	LD	HL,-15
+	CALL	__frameset
+;  151	  int n;
+;  152	  double tempX;
+;  153	  for(n = 0; n < i; n++){
+	LD	BC,0
+	LD	(IX+-3),BC
+	JR	L_71
+L_69:
+;  154	    tempX = x;
+	LD	BC,(IX+6)
+	LD	A,(IX+9)
+	LD	(IX+-7),BC
+	LD	(IX+-4),A
+;  155	    x = (x*x)-(y*y) + cx;
+	LD	HL,(IX+6)
+	LD	E,(IX+9)
+	LD	BC,(IX+6)
+	LD	A,(IX+9)
+	CALL	__fmul
+	LD	(IX+-10),BC
+	LD	(IX+-11),A
+	LD	A,(IX+15)
+	LD	BC,(IX+12)
+	LD	HL,(IX+12)
+	LD	E,(IX+15)
+	CALL	__fmul
+	LD	E,A
+	LD	HL,BC
+	LD	BC,(IX+-10)
+	LD	A,(IX+-11)
+	CALL	__fsub
+	LD	HL,(IX+21)
+	LD	E,(IX+24)
+	CALL	__fadd
+	LD	(IX+6),BC
+	LD	(IX+9),A
+;  156	    y = (2.0*tempX*y) + cy;
+	LD	BC,(IX+-7)
+	LD	A,(IX+-4)
+	OR	A,A
+	SBC	HL,HL
+	LD	E,64
+	CALL	__fmul
+	LD	HL,(IX+12)
+	LD	E,(IX+15)
+	CALL	__fmul
+	LD	HL,(IX+27)
+	LD	E,(IX+30)
+	CALL	__fadd
+	LD	(IX+12),BC
+	LD	(IX+15),A
+;  157	    if((x*x) + (y*y) > 2.0){
+	LD	HL,(IX+6)
+	LD	E,(IX+9)
+	LD	BC,(IX+6)
+	LD	A,(IX+9)
+	CALL	__fmul
+	LD	(IX+-14),BC
+	LD	(IX+-15),A
+	LD	A,(IX+15)
+	LD	BC,(IX+12)
+	LD	HL,(IX+12)
+	LD	E,(IX+15)
+	CALL	__fmul
+	LD	E,A
+	LD	HL,BC
+	LD	BC,(IX+-14)
+	LD	A,(IX+-15)
+	CALL	__fadd
+	OR	A,A
+	SBC	HL,HL
+	LD	E,64
+	CALL	__fcmp
+	JP	P,L_70
+	OR	A,A
+;  158	      return 0;
+	SBC	HL,HL
+	JR	L_73
+;  159	    }
+;  160	  }
+L_70:
+	LD	BC,(IX+-3)
+	INC	BC
+	LD	(IX+-3),BC
+L_71:
+	LD	BC,(IX+18)
+	LD	HL,(IX+-3)
+	OR	A,A
+	SBC	HL,BC
+	JP	M,L_69
+;  161	  return 1;
+	LD	HL,1
+;  162	}
+L_73:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _juliaPixel ***************************
+;Name                         Addr/Register   Size   Type
+;tempX                                 IX-7      4   variable
+;n                                     IX-3      3   variable
+;cy                                   IX+27      4   parameter
+;cx                                   IX+21      4   parameter
+;i                                    IX+18      3   parameter
+;y                                    IX+12      4   parameter
+;x                                     IX+6      4   parameter
+
+
+; Stack Frame Size: 48 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  163	
+;  164	int render_rough(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
+_render_rough:
+	LD	HL,-12
+	CALL	__frameset
+;  165	  //4 x 4 blocks
+;  166	  uint24_t x;
+;  167	  uint8_t y;
+;  168	  //Z value
+;  169	  double zx;
+;  170	  double zy;
+;  171	  for(x = 0; x < xLim; x+=4){
+	LD	BC,0
+	LD	(IX+-4),BC
+	JR	L_84
+L_82:
+;  172	    for(y = 0; y < yLim; y+=4){
+	LD	(IX+-1),0
+	JR	L_79
+L_77:
+;  173	      zx = (((double)x)*0.0125)-2.0;
+	LD	BC,(IX+-4)
+	XOR	A,A
+	CALL	__ultof
+	LD	HL,5033165
+	LD	E,60
+	CALL	__fmul
+	OR	A,A
+	SBC	HL,HL
+	LD	E,64
+	CALL	__fsub
+	LD	(IX+-8),BC
+	LD	(IX+-5),A
+;  174	      zy = (((double)y)*0.0125)-1.5;
+	UEXT	HL
+	LD	L,(IX+-1)
+	LD	A,H
+	LD	BC,HL
+	CALL	__ultof
+	LD	HL,5033165
+	LD	E,60
+	CALL	__fmul
+	LD	HL,12582912
+	LD	E,63
+	CALL	__fsub
+	LD	(IX+-12),BC
+	LD	(IX+-9),A
+;  175	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
+	LD	C,(IX+15)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+12)
+	PUSH	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	LD	BC,(IX+24)
+	PUSH	BC
+	LD	C,(IX+-9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-12)
+	PUSH	BC
+	LD	C,(IX+-5)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-8)
+	PUSH	BC
+	CALL	_juliaPixel
+	LD	IY,27
+	ADD	IY,SP
+	OR	A,A
+	LD	BC,1
+	SBC	HL,BC
+	LD	SP,IY
+	JR	NZ,L_75
+;  176	        gfx_SetColor(c1);
+	LD	C,(IX+18)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  177	      }
+;  178	      else{
+	JR	L_76
+L_75:
+;  179	        gfx_SetColor(c2);
+	LD	C,(IX+21)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  180	      }
+L_76:
+;  181	      gfx_FillRectangle(x, y, 4, 4);
+	LD	BC,4
+	PUSH	BC
+	PUSH	BC
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	BC,(IX+-4)
+	PUSH	BC
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  182	      gfx_FillRectangle(316-x, 236-y, 4, 4);
+	LD	BC,4
+	PUSH	BC
+	PUSH	BC
+	LD	A,(IX+-1)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,236
+	OR	A,A
+	SBC	HL,BC
+	PUSH	HL
+	LD	HL,316
+	LD	BC,(IX+-4)
+	OR	A,A
+	SBC	HL,BC
+	PUSH	HL
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	A,(IX+-1)
+	ADD	A,4
+	LD	(IX+-1),A
+;  183	    }
+L_79:
+	LD	A,(IX+-1)
+	CP	A,240
+	JR	C,L_77
+;  184	    if(os_GetCSC()){
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	Z,L_83
+;  185	      gfx_End();
+	CALL	_gfx_End
+;  186	      return 1;
+	LD	HL,1
+	JR	L_86
+;  187	    }
+;  188	  }
+L_83:
+	LD	IY,(IX+-4)
+	LEA	IY,IY+4
+	LD	(IX+-4),IY
+L_84:
+	LD	BC,160
+	LD	HL,(IX+-4)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_82
+	OR	A,A
+;  189	  return 0;
+	SBC	HL,HL
+;  190	}
+L_86:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _render_rough ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_End                            IMPORT  -----   function
+;_os_GetCSC                          IMPORT  -----   function
+;_gfx_FillRectangle                  IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
+;_juliaPixel                         IMPORT  -----   function
+;zy                                   IX-12      4   variable
+;zx                                    IX-8      4   variable
+;x                                     IX-4      3   variable
+;y                                     IX-1      1   variable
+;Iter                                 IX+24      3   parameter
+;c2                                   IX+21      1   parameter
+;c1                                   IX+18      1   parameter
+;cy                                   IX+12      4   parameter
+;cx                                    IX+6      4   parameter
+
+
+; Stack Frame Size: 39 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  191	
+;  192	int render_full(double cx, double cy, uint8_t c1, uint8_t c2, int Iter){
+_render_full:
+	LD	HL,-12
+	CALL	__frameset
+;  193	  //Per pixel render
+;  194	  uint24_t x;
+;  195	  uint8_t y;
+;  196	  //Z value
+;  197	  double zx;
+;  198	  double zy;
+;  199	  for(x = 0; x < xLim; x++){
+	LD	BC,0
+	LD	(IX+-4),BC
+	JR	L_99
+L_97:
+;  200	    for(y = 0; y < yLim; y++){
+	LD	(IX+-1),0
+	JR	L_94
+L_92:
+;  201	      zx = (((double)x)*0.0125)-2.0;
+	LD	BC,(IX+-4)
+	XOR	A,A
+	CALL	__ultof
+	LD	HL,5033165
+	LD	E,60
+	CALL	__fmul
+	OR	A,A
+	SBC	HL,HL
+	LD	E,64
+	CALL	__fsub
+	LD	(IX+-8),BC
+	LD	(IX+-5),A
+;  202	      zy = (((double)y)*0.0125)-1.5;
+	UEXT	HL
+	LD	L,(IX+-1)
+	LD	A,H
+	LD	BC,HL
+	CALL	__ultof
+	LD	HL,5033165
+	LD	E,60
+	CALL	__fmul
+	LD	HL,12582912
+	LD	E,63
+	CALL	__fsub
+	LD	(IX+-12),BC
+	LD	(IX+-9),A
+;  203	      if(juliaPixel(zx, zy, Iter, cx, cy) == 1){
+	LD	C,(IX+15)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+12)
+	PUSH	BC
+	LD	C,(IX+9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+6)
+	PUSH	BC
+	LD	BC,(IX+24)
+	PUSH	BC
+	LD	C,(IX+-9)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-12)
+	PUSH	BC
+	LD	C,(IX+-5)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-8)
+	PUSH	BC
+	CALL	_juliaPixel
+	LD	IY,27
+	ADD	IY,SP
+	OR	A,A
+	LD	BC,1
+	SBC	HL,BC
+	LD	SP,IY
+	JR	NZ,L_90
+;  204	        gfx_SetColor(c1);
+	LD	C,(IX+18)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  205	      }
+;  206	      else{
+	JR	L_91
+L_90:
+;  207	        gfx_SetColor(c2);
+	LD	C,(IX+21)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  208	      }
+L_91:
+;  209	      gfx_SetPixel(x, y);
+	LD	C,(IX+-1)
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-4)
+	PUSH	BC
+	CALL	_gfx_SetPixel
+	POP	BC
+	POP	BC
+;  210	      gfx_SetPixel(319-x, 239-y);
+	LD	A,239
+	SUB	A,(IX+-1)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,(IX+-4)
+	OR	A,A
+	LD	HL,319
+	SBC	HL,BC
+	PUSH	HL
+	CALL	_gfx_SetPixel
+	POP	BC
+	POP	BC
+	INC	(IX+-1)
+;  211	    }
+L_94:
+	LD	A,(IX+-1)
+	CP	A,240
+	JR	C,L_92
+;  212	    if(os_GetCSC()){
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	Z,L_98
+;  213	      gfx_End();
+	CALL	_gfx_End
+;  214	      return 1;
+	LD	HL,1
+	JR	L_101
+;  215	    }
+;  216	  }
+L_98:
+	LD	BC,(IX+-4)
+	INC	BC
+	LD	(IX+-4),BC
+L_99:
+	LD	BC,160
+	LD	HL,(IX+-4)
+	OR	A,A
+	SBC	HL,BC
+	JR	C,L_97
+	OR	A,A
+;  217	  return 0;
+	SBC	HL,HL
+;  218	}
+L_101:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _render_full ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_End                            IMPORT  -----   function
+;_os_GetCSC                          IMPORT  -----   function
+;_gfx_SetPixel                       IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
+;_juliaPixel                         IMPORT  -----   function
+;zy                                   IX-12      4   variable
+;zx                                    IX-8      4   variable
+;x                                     IX-4      3   variable
+;y                                     IX-1      1   variable
+;Iter                                 IX+24      3   parameter
+;c2                                   IX+21      1   parameter
+;c1                                   IX+18      1   parameter
+;cy                                   IX+12      4   parameter
+;cx                                    IX+6      4   parameter
+
+
+; Stack Frame Size: 39 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	XREF _kb_Scan:ROM
+	XREF _gfx_FillRectangle:ROM
+	XREF _gfx_SetPixel:ROM
+	XREF _gfx_SetColor:ROM
+	XREF _gfx_End:ROM
+	XREF _gfx_Begin:ROM
+	XREF _os_GetCSC:ROM
+	XREF _os_PutStrFull:ROM
+	XREF _os_SetCursorPos:ROM
+	XREF __fadd:ROM
+	XREF __fsub:ROM
+	XREF __fmul:ROM
+	XREF __fcmp:ROM
+	XREF __ultof:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XDEF _render_full
+	XDEF _render_rough
+	XDEF _juliaPixel
+	XDEF _printText
+	XDEF _promptStr
+	XDEF _main
+	END
