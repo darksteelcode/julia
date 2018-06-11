@@ -141,16 +141,69 @@ int menu_keys(){
       draw_crosshair();
       wait(200);
     }
+    //Iterations adjustments
     if(kb_Data[6] & kb_Add){
       Iter += 1;
       draw_iter();
-      wait(300);
+      wait(200);
     }
     if(kb_Data[6] & kb_Sub){
       Iter -= 1;
       draw_iter();
-      wait(300);
+      wait(200);
     }
+    //Presets
+    if(kb_Data[3] & kb_1){
+      cx = 0.26;
+      cy = 0.54;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[4] & kb_2){
+      cx = -1.135;
+      cy = 0.2475;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[5] & kb_3){
+      cx = 0.3;
+      cy = -0.01;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[3] & kb_4){
+      cx = -1.476;
+      cy = 0;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[4] & kb_5){
+      cx = 0.28;
+      cy = 0.008;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[5] & kb_6){
+      cx = -0.79;
+      cy = 0.15;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[3] & kb_7){
+      cx = -0.12;
+      cy = 0.77;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[4] & kb_8){
+      cx = -0.0519;
+      cy = 0.688;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[5] & kb_9){
+      cx = 0;
+      cy = 0.75;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+    if(kb_Data[3] & kb_0){
+      cx = -0.1;
+      cy = 0.66;
+      draw_preview(c1, c2, PREVIEW_ITER);
+    }
+
   }
   return 0;
 }
@@ -199,14 +252,17 @@ void draw_menu(){
   gfx_PrintStringXY("oreground colors, respectively. Pre-", 67, 185);
   gfx_PrintStringXY("ss enter to begin rendering, and pr-", 67, 195);
   gfx_PrintStringXY("ess any key during rendering to exit.", 67, 205);
-  gfx_PrintStringXY("Press 2nd to update the preview.", 67, 215);
-
+  gfx_PrintStringXY("Press 2nd to update the preview, and ", 67, 215);
+  gfx_PrintStringXY("use the 0-9 keys to select a preset C.", 67, 225);
+  //Preset Text in control column for completness
+  gfx_PrintStringXY("Presets", 5, 140);
+  gfx_PrintStringXY("Keys 0-9", 5, 150);
 }
 
 void draw_iter(){
   //Clear Area
   gfx_SetColor(gfx_white);
-  gfx_FillRectangle(5, 110, 54, 40);
+  gfx_FillRectangle(5, 110, 54, 25);
   gfx_SetTextFGColor(gfx_black);
   gfx_SetTextScale(1,1);
   gfx_PrintStringXY("Iters:", 5, 115);

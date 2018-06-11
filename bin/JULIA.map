@@ -4,7 +4,7 @@ Copyright (C) 1999-2008 Zilog, Inc. All Rights Reserved
 
 LINK MAP:
 
-DATE:      Mon Jun 11 16:30:02 2018
+DATE:      Mon Jun 11 17:40:10 2018
 PROCESSOR: assembler
 FILES:     obj/cstartup.obj
            obj/libheader.obj
@@ -28,8 +28,8 @@ SPACE ALLOCATION:
 
 Space                     Base         Top      Size      Used    Unused
 ------------------ ----------- ----------- --------- --------- ---------
-RAM                   D:D031F6    D:D1B9F1   300000H     1189H   2FEE77H
-                                          (  3145728      4489   3141239)
+RAM                   D:D031F6    D:D1BCEE   300000H     1486H   2FEB7AH
+                                          (  3145728      5254   3140474)
 
 
 SEGMENTS WITHIN SPACE:
@@ -46,21 +46,21 @@ RAM                Type                Base        Top         Size
 .launcher          normal data            D:D1A98F    D:D1A9DE       50h
 .startup           normal data            D:D1AA22    D:D1AA72       51h
 BSS                normal data            D:D031F6    D:D0320B       16h
-CODE               normal data            D:D1AA73    D:D1B790      d1eh
-DATA               normal data            D:D1B791    D:D1B7CD       3dh
-TEXT               normal data            D:D1B7CE    D:D1B9F1      224h
+CODE               normal data            D:D1AA73    D:D1BA50      fdeh
+DATA               normal data            D:D1BA51    D:D1BA8D       3dh
+TEXT               normal data            D:D1BA8E    D:D1BCEE      261h
 
 SEGMENTS WITHIN MODULES:
 ========================
 
-Module: ..\SRC\MAIN.C (File: obj/main.obj) Version: 1:0 06/11/2018 16:30:02
+Module: ..\SRC\MAIN.C (File: obj/main.obj) Version: 1:0 06/11/2018 17:40:10
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: BSS                               D:D031F6    D:D0320B       16h
-    Segment: CODE                              D:D1AA73    D:D1B782      d10h
-    Segment: DATA                              D:D1B7B3    D:D1B7CD       1bh
-    Segment: TEXT (was STRSECT)                D:D1B7CE    D:D1B9F1      224h
+    Segment: CODE                              D:D1AA73    D:D1BA42      fd0h
+    Segment: DATA                              D:D1BA73    D:D1BA8D       1bh
+    Segment: TEXT (was STRSECT)                D:D1BA8E    D:D1BCEE      261h
 
 
 Module: iconc.asm (File: obj/iconc.obj) Version: 1:0 08/19/2017 12:10:03
@@ -78,26 +78,26 @@ Module: Z:\Users\edward\CEdev\lib\asm\cstartup.asm (File: obj/cstartup.obj) Vers
     Segment: .startup                          D:D1AA22    D:D1AA72       51h
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\graphx_header.asm (File: obj/graphx_header.obj) Version: 1:0 06/11/2018 16:30:01
+Module: Z:\Users\edward\CEdev\lib\asm\graphx_header.asm (File: obj/graphx_header.obj) Version: 1:0 06/11/2018 17:40:09
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .graphx_header                    D:D1A9DF    D:D1A9E7        9h
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\keypadc_header.asm (File: obj/keypadc_header.obj) Version: 1:0 06/11/2018 16:30:01
+Module: Z:\Users\edward\CEdev\lib\asm\keypadc_header.asm (File: obj/keypadc_header.obj) Version: 1:0 06/11/2018 17:40:09
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .keypadc_header                   D:D1AA14    D:D1AA1D        ah
 
 
-Module: Z:\Users\edward\CEdev\lib\asm\libheader.asm (File: obj/libheader.obj) Version: 1:0 06/11/2018 16:30:01
+Module: Z:\Users\edward\CEdev\lib\asm\libheader.asm (File: obj/libheader.obj) Version: 1:0 06/11/2018 17:40:09
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
     Segment: .launcher                         D:D1A98F    D:D1A9DE       50h
-    Segment: DATA                              D:D1B791    D:D1B7B2       22h
+    Segment: DATA                              D:D1BA51    D:D1BA72       22h
 
 
 Module: Z:\Users\edward\toolchain\src\graphx\gfx_Begin.src (Library: /Users/edward/CEdev/lib/graphx.lib) Version: 1:0 05/30/2017 17:22:56
@@ -188,7 +188,7 @@ Module: Z:\Users\edward\toolchain\src\std\shared\frameset.src (Library: /Users/e
 
     Name                                        Base        Top      Size
     --------------------------------------- ----------- ----------- ---------
-    Segment: CODE                              D:D1B783    D:D1B790        eh
+    Segment: CODE                              D:D1BA43    D:D1BA50        eh
 
 EXTERNAL DEFINITIONS:
 =====================
@@ -350,24 +350,24 @@ _exit                               D:D1AA6F cstartup        .startup
 _main                               D:D1AA73 MAIN            CODE                            
 _start_screen                       D:D1AB33 MAIN            CODE                            
 _menu_keys                          D:D1AB68 MAIN            CODE                            
-_draw_menu                          D:D1AD2E MAIN            CODE                            
-_draw_iter                          D:D1AFB9 MAIN            CODE                            
-_draw_color_preview                 D:D1B039 MAIN            CODE                            
-_draw_crosshair                     D:D1B08C MAIN            CODE                            
-_draw_preview                       D:D1B127 MAIN            CODE                            
-_juliaPixel                         D:D1B264 MAIN            CODE                            
-_render_rough                       D:D1B351 MAIN            CODE                            
-_render_full                        D:D1B4A8 MAIN            CODE                            
-_wait                               D:D1B5DE MAIN            CODE                            
-_reverse                            D:D1B624 MAIN            CODE                            
-_itoa                               D:D1B690 MAIN            CODE                            
-__frameset                          D:D1B783 frameset        CODE                            
-_cx                                 D:D1B7B3 MAIN            DATA                            
-_cy                                 D:D1B7B7 MAIN            DATA                            
-_colors                             D:D1B7BB MAIN            DATA                            
-_c1index                            D:D1B7C5 MAIN            DATA                            
-_c2index                            D:D1B7C8 MAIN            DATA                            
-_Iter                               D:D1B7CB MAIN            DATA                            
+_draw_menu                          D:D1AFAC MAIN            CODE                            
+_draw_iter                          D:D1B279 MAIN            CODE                            
+_draw_color_preview                 D:D1B2F9 MAIN            CODE                            
+_draw_crosshair                     D:D1B34C MAIN            CODE                            
+_draw_preview                       D:D1B3E7 MAIN            CODE                            
+_juliaPixel                         D:D1B524 MAIN            CODE                            
+_render_rough                       D:D1B611 MAIN            CODE                            
+_render_full                        D:D1B768 MAIN            CODE                            
+_wait                               D:D1B89E MAIN            CODE                            
+_reverse                            D:D1B8E4 MAIN            CODE                            
+_itoa                               D:D1B950 MAIN            CODE                            
+__frameset                          D:D1BA43 frameset        CODE                            
+_cx                                 D:D1BA73 MAIN            DATA                            
+_cy                                 D:D1BA77 MAIN            DATA                            
+_colors                             D:D1BA7B MAIN            DATA                            
+_c1index                            D:D1BA85 MAIN            DATA                            
+_c2index                            D:D1BA88 MAIN            DATA                            
+_Iter                               D:D1BA8B MAIN            DATA                            
 
 173 external symbol(s).
 
@@ -580,7 +580,7 @@ _Iter                             Defined     ..\SRC\MAIN.C
 
 OUTPUT CHECKSUM
 ===============
-bin/JULIA.hex        089C4F
+bin/JULIA.hex        09F060
 
 
 
