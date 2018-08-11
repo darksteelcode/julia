@@ -3,6 +3,7 @@ A Julia set renderer for the TI-84 Plus CE, drawing an iterative fractal of the 
 
 ![](fractal1.png)
 ![](fractal2.png)
+![](fractal3.png)
 
 ## Usage
 #### Upload
