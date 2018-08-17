@@ -1,15 +1,15 @@
 # Julia
 A Julia set renderer for the TI-84 Plus CE, drawing an iterative fractal of the form *z*=*z*^2+*c*.
 
-![](fractal1.png)
-![](fractal2.png)
-![](fractal3.png)
+![](images/fractal1.png)
+![](images/fractal2.png)
+![](images/fractal3.png)
 
 ## Usage
 #### Upload
 To transfer to a calculator, send the `bin/julia.8xp` file to your calculator. If you get a message about needing `libload`, send all of the files in the `clibraries` directory to your calculator. These are the libraries that the program requires.
 #### Usage
-![](menu.png)
+![](images/menu.png)
 <br>The above image is of the main menu. On the main menu, parameters are set for the fractal. The following controls can be used:<br>
 ##### Controls
 Enter: draw the fractal with the current parameters <br>
